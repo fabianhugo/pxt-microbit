@@ -9,6 +9,14 @@
 #define PinCompat MicroBitPin
 #endif
 
+// Calliope-specific pins not defined in Lancaster micro:bit v1 DAL
+#ifndef MICROBIT_ID_IO_P17
+#define MICROBIT_ID_IO_P17 117
+#endif
+#ifndef MICROBIT_ID_IO_P18
+#define MICROBIT_ID_IO_P18 118
+#endif
+
 enum class DigitalPin {
     //% blockIdentity="pins._digitalPin"
     P0 = MICROBIT_ID_IO_P0,
@@ -44,6 +52,10 @@ enum class DigitalPin {
     P15 = MICROBIT_ID_IO_P15,
     //% blockIdentity="pins._digitalPin"
     P16 = MICROBIT_ID_IO_P16,
+    //% blockIdentity="pins._digitalPin"
+    P17 = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._digitalPin"
+    P18 = MICROBIT_ID_IO_P18,
     //% blockIdentity="pins._digitalPin"
     //% blockHidden=1
     P19 = MICROBIT_ID_IO_P19,
@@ -87,6 +99,10 @@ enum class AnalogPin {
     P15 = MICROBIT_ID_IO_P15,
     //% blockIdentity="pins._analogPin"
     P16 = MICROBIT_ID_IO_P16,
+    //% blockIdentity="pins._analogPin"
+    P17 = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._analogPin"
+    P18 = MICROBIT_ID_IO_P18,
     //% blockIdentity="pins._analogPin"
     //% blockHidden=1
     P19 = MICROBIT_ID_IO_P19,
@@ -144,6 +160,10 @@ MicroBitPin *getPin(int id) {
         case MICROBIT_ID_IO_P14: return &uBit.io.P14;
         case MICROBIT_ID_IO_P15: return &uBit.io.P15;
         case MICROBIT_ID_IO_P16: return &uBit.io.P16;
+#if MICROBIT_CODAL
+        case MICROBIT_ID_IO_P17: return &uBit.io.P17;
+        case MICROBIT_ID_IO_P18: return &uBit.io.P18;
+#endif
         case MICROBIT_ID_IO_P19: return &uBit.io.P19;
         case MICROBIT_ID_IO_P20: return &uBit.io.P20;
 #if MICROBIT_CODAL

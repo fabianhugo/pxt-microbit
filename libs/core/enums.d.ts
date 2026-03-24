@@ -63,6 +63,7 @@ declare namespace basic {
     P0 = 100,  // MICROBIT_ID_IO_P0
     P1 = 101,  // MICROBIT_ID_IO_P1
     P2 = 102,  // MICROBIT_ID_IO_P2
+    P3 = 103,  // MICROBIT_ID_IO_P3
     }
 
 
@@ -463,6 +464,10 @@ declare namespace led {
     //% blockIdentity="pins._digitalPin"
     P16 = 116,  // MICROBIT_ID_IO_P16
     //% blockIdentity="pins._digitalPin"
+    P17 = 117,  // MICROBIT_ID_IO_P17
+    //% blockIdentity="pins._digitalPin"
+    P18 = 118,  // MICROBIT_ID_IO_P18
+    //% blockIdentity="pins._digitalPin"
     //% blockHidden=1
     P19 = 119,  // MICROBIT_ID_IO_P19
     //% blockIdentity="pins._digitalPin"
@@ -506,6 +511,10 @@ declare namespace led {
     P15 = 115,  // MICROBIT_ID_IO_P15
     //% blockIdentity="pins._analogPin"
     P16 = 116,  // MICROBIT_ID_IO_P16
+    //% blockIdentity="pins._analogPin"
+    P17 = 117,  // MICROBIT_ID_IO_P17
+    //% blockIdentity="pins._analogPin"
+    P18 = 118,  // MICROBIT_ID_IO_P18
     //% blockIdentity="pins._analogPin"
     //% blockHidden=1
     P19 = 119,  // MICROBIT_ID_IO_P19
