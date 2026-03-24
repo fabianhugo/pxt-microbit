@@ -63,6 +63,8 @@
         "sendbufferbrightness.s",
         "light.cpp",
         "logo.cpp",
+        "rgbled.cpp",
+        "rgbled.ts",
         "loops.ts",
         "touchmode.cpp",
         "soundexpressions.ts",
