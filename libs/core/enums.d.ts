@@ -473,6 +473,21 @@ declare namespace led {
     //% blockIdentity="pins._digitalPin"
     //% blockHidden=1
     P20 = 120,  // MICROBIT_ID_IO_P20
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M_MODE = 156,  // MICROBIT_ID_IO_M_MODE
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M0_DIR = 152,  // MICROBIT_ID_IO_M_A_IN1
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M1_DIR = 154,  // MICROBIT_ID_IO_M_B_IN1
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M0_SPEED = 153,  // MICROBIT_ID_IO_M_A_IN2
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M1_SPEED = 155,  // MICROBIT_ID_IO_M_B_IN2
     }
 
 
@@ -521,6 +536,21 @@ declare namespace led {
     //% blockIdentity="pins._analogPin"
     //% blockHidden=1
     P20 = 120,  // MICROBIT_ID_IO_P20
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M_MODE = 156,  // MICROBIT_ID_IO_M_MODE
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M0_DIR = 152,  // MICROBIT_ID_IO_M_A_IN1
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M1_DIR = 154,  // MICROBIT_ID_IO_M_B_IN1
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M0_SPEED = 153,  // MICROBIT_ID_IO_M_A_IN2
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M1_SPEED = 155,  // MICROBIT_ID_IO_M_B_IN2
     }
 
 

@@ -65,6 +65,7 @@
         "logo.cpp",
         "rgbled.cpp",
         "rgbled.ts",
+        "motors.ts",
         "loops.ts",
         "touchmode.cpp",
         "soundexpressions.ts",

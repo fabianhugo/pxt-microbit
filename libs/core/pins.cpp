@@ -16,6 +16,24 @@
 #ifndef MICROBIT_ID_IO_P18
 #define MICROBIT_ID_IO_P18 118
 #endif
+#ifndef MICROBIT_ID_IO_RGB
+#define MICROBIT_ID_IO_RGB 151
+#endif
+#ifndef MICROBIT_ID_IO_M_A_IN1
+#define MICROBIT_ID_IO_M_A_IN1 152
+#endif
+#ifndef MICROBIT_ID_IO_M_A_IN2
+#define MICROBIT_ID_IO_M_A_IN2 153
+#endif
+#ifndef MICROBIT_ID_IO_M_B_IN1
+#define MICROBIT_ID_IO_M_B_IN1 154
+#endif
+#ifndef MICROBIT_ID_IO_M_B_IN2
+#define MICROBIT_ID_IO_M_B_IN2 155
+#endif
+#ifndef MICROBIT_ID_IO_M_MODE
+#define MICROBIT_ID_IO_M_MODE 156
+#endif
 
 enum class DigitalPin {
     //% blockIdentity="pins._digitalPin"
@@ -62,6 +80,21 @@ enum class DigitalPin {
     //% blockIdentity="pins._digitalPin"
     //% blockHidden=1
     P20 = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M_MODE = MICROBIT_ID_IO_M_MODE,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M0_DIR = MICROBIT_ID_IO_M_A_IN1,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M1_DIR = MICROBIT_ID_IO_M_B_IN1,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M0_SPEED = MICROBIT_ID_IO_M_A_IN2,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M1_SPEED = MICROBIT_ID_IO_M_B_IN2,
 };
 
 enum class AnalogPin {
@@ -108,7 +141,22 @@ enum class AnalogPin {
     P19 = MICROBIT_ID_IO_P19,
     //% blockIdentity="pins._analogPin"
     //% blockHidden=1
-    P20 = MICROBIT_ID_IO_P20
+    P20 = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M_MODE = MICROBIT_ID_IO_M_MODE,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M0_DIR = MICROBIT_ID_IO_M_A_IN1,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M1_DIR = MICROBIT_ID_IO_M_B_IN1,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M0_SPEED = MICROBIT_ID_IO_M_A_IN2,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M1_SPEED = MICROBIT_ID_IO_M_B_IN2
 };
 
 enum class PulseValue {
@@ -167,6 +215,12 @@ MicroBitPin *getPin(int id) {
         case MICROBIT_ID_IO_P19: return &uBit.io.P19;
         case MICROBIT_ID_IO_P20: return &uBit.io.P20;
 #if MICROBIT_CODAL
+        case MICROBIT_ID_IO_RGB: return &uBit.io.RGB;
+        case MICROBIT_ID_IO_M_A_IN1: return &uBit.io.M_A_IN1;
+        case MICROBIT_ID_IO_M_A_IN2: return &uBit.io.M_A_IN2;
+        case MICROBIT_ID_IO_M_B_IN1: return &uBit.io.M_B_IN1;
+        case MICROBIT_ID_IO_M_B_IN2: return &uBit.io.M_B_IN2;
+        case MICROBIT_ID_IO_M_MODE: return &uBit.io.M_MODE;
         case 1001: return &uBit.io.usbTx;
         case 1002: return &uBit.io.usbRx;
 #endif
