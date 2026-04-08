@@ -697,6 +697,15 @@ declare namespace music {
     //% weight=1 level.defl=0 shim=music::setSilenceLevel
     function setSilenceLevel(level?: int32): void;
 }
+declare namespace hardware {
+
+    /**
+     * Returns the number of physically present RGB LEDs.
+     * 3 on Calliope mini v3 (codal), 1 on Calliope mini v1/v2 (DAL).
+     */
+    //% shim=hardware::_rgbLedCount
+    function _rgbLedCount(): int32;
+}
 declare namespace pins {
 
     /**
@@ -1272,69 +1281,6 @@ declare namespace input {
     //% parts="logotouch"
     //% help="input/logo-is-pressed" shim=input::logoIsPressed
     function logoIsPressed(): boolean;
-}
-
-
-    /**
-     * Provides access to basic calliope mini functionality.
-     */
-
-declare namespace basic {
-
-    /**
-     * Sets the color on the built-in RGB LED. Set to 0 to turn off.
-     * @param color1 The color of the first LED in RGB format (e.g., 0xFF0000 for red).
-     */
-    //% blockId=device_set_led_colors-dal
-    //% hidden=1 shim=basic::setLedColorDal
-    function setLedColorDal(color: int32): void;
-
-    /**
-     * Sets the color on the built-in RGB LED. Set to 0 to turn off.
-     * @param color1 The color of the first LED in RGB format (e.g., 0xFF0000 for red).
-     * @param color2 The second LED color.
-     * @param color3 The third LED color.
-     * @param brightness The LED brightness in percent.
-     */
-    //% blockId=device_set_led_colors-codal
-    //% hidden=1 brightness.defl=20 shim=basic::setLedColorsCodal
-    function setLedColorsCodal(color1: int32, color2: int32, color3: int32, brightness?: int32): void;
-
-    /**
-     * Sets the color on the built-in RGB LED. Set to 0 to turn off.
-     */
-    //% blockId=device_turn_rgb_led_off block="turn built-in LED off"
-    //% help=basic/turn-rgb-led-off
-    //% weight=10
-    //% group="RGB LED"
-    //% advanced=true shim=basic::turnRgbLedOff
-    function turnRgbLedOff(): void;
-
-    /**
-     * Sets individual colors on the three built-in RGB LEDs.
-     * @param color1 Color of the first LED (e.g., 0xFF0000 for red).
-     * @param color2 Color of the second LED.
-     * @param color3 Color of the third LED.
-     */
-    //% help=basic/set-led-colors
-    //% blockId=device_set_led_colors
-    //% block="set LEDs to %color1=colorNumberPicker|%color2=colorNumberPicker|%color3=colorNumberPicker"
-    //%
-    //% weight=11
-    //% group="RGB LED" color1.defl=0xff0000 color2.defl=0x000000 color3.defl=0x000000 shim=basic::setLedColors
-    function setLedColors(color1?: int32, color2?: int32, color3?: int32): void;
-
-    /**
-     * Sets the color on the built-in RGB LED. Set to 0 to turn off.
-     * @param color The color of the LED in RGB format (e.g., 0xFF0000 for red).
-     */
-    //% help=basic/set-led-color
-    //% blockId=device_set_led_color
-    //% block="set LED to %color=colorNumberPicker"
-    //%
-    //% weight=10
-    //% group="RGB LED" color.defl=0xff0000 shim=basic::setLedColor
-    function setLedColor(color?: int32): void;
 }
 declare namespace pins {
 

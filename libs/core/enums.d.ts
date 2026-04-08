@@ -488,6 +488,9 @@ declare namespace led {
     //% blockIdentity="pins._digitalPin"
     //% blockHidden=1
     M1_SPEED = 155,  // MICROBIT_ID_IO_M_B_IN2
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    RGB = 151,  // MICROBIT_ID_IO_RGB
     }
 
 
@@ -641,8 +644,6 @@ declare namespace serial {
     //% block="long pressed"
     LongPressed = 4,  // MICROBIT_BUTTON_EVT_LONG_CLICK
     }
-declare namespace basic {
-}
 
 
     declare const enum TouchTargetMode {

@@ -174,8 +174,8 @@
     "compileService": {
         "yottaTarget": "bbc-microbit-classic-gcc@https://github.com/lancaster-university/yotta-target-bbc-microbit-classic-gcc",
         "yottaCorePackage": "microbit",
-        "githubCorePackage": "lancaster-university/microbit",
-        "gittag": "v2.2.0-rc6",
+        "githubCorePackage": "calliope-mini/microbit",
+        "gittag": "v2.2.0-rc6-devhugo",
         "serviceId": "microbit",
         "dockerImage": "pext/yotta:gcc5"
     },

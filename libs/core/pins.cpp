@@ -95,6 +95,9 @@ enum class DigitalPin {
     //% blockIdentity="pins._digitalPin"
     //% blockHidden=1
     M1_SPEED = MICROBIT_ID_IO_M_B_IN2,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    RGB = MICROBIT_ID_IO_RGB,
 };
 
 enum class AnalogPin {
@@ -214,8 +217,10 @@ MicroBitPin *getPin(int id) {
 #endif
         case MICROBIT_ID_IO_P19: return &uBit.io.P19;
         case MICROBIT_ID_IO_P20: return &uBit.io.P20;
+#ifdef MICROBIT_PIN_RGB
+        case MICROBIT_ID_IO_RGB: return &uBit.io.RGB; // All Calliope variants (v1/v2 DAL, v3 codal)
+#endif
 #if MICROBIT_CODAL
-        case MICROBIT_ID_IO_RGB: return &uBit.io.RGB;
         case MICROBIT_ID_IO_M_A_IN1: return &uBit.io.M_A_IN1;
         case MICROBIT_ID_IO_M_A_IN2: return &uBit.io.M_A_IN2;
         case MICROBIT_ID_IO_M_B_IN1: return &uBit.io.M_B_IN1;
@@ -229,6 +234,21 @@ MicroBitPin *getPin(int id) {
 }
 
 } // pxt
+
+namespace hardware {
+    /**
+     * Returns the number of physically present RGB LEDs.
+     * 3 on Calliope mini v3 (codal), 1 on Calliope mini v1/v2 (DAL).
+     */
+    //%
+    int _rgbLedCount() {
+#if MICROBIT_CODAL
+        return 3;
+#else
+        return 1;
+#endif
+    }
+} // hardware
 
 namespace pins {
     #define PINOP(op) \

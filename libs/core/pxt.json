@@ -63,7 +63,6 @@
         "sendbufferbrightness.s",
         "light.cpp",
         "logo.cpp",
-        "rgbled.cpp",
         "rgbled.ts",
         "motors.ts",
         "loops.ts",
