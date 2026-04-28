@@ -1,12 +1,3 @@
-enum MotorCommand {
-    //% block=coast
-    Coast,
-    //% block=break
-    Break,
-    //% block=sleep
-    Sleep
-}
-
 enum Motor {
     //% block="M0"
     M0,
@@ -23,31 +14,6 @@ enum Motor {
 namespace motors {
 
     /**
-    * Turns on the motor at a certain percent of power. Switches to single motor mode!
-    * @param power %percent of power sent to the motor. Negative power goes backward. eg: 50
-    */
-    //% blockId=motor_on block="motor on at %percent \\%"
-    //% parts=dcmotor weight=90 blockGap=8
-    //% percent.shadow="speedPicker"
-    //% power.defl=100
-    //% hidden=1 deprecated=1
-    export function motorPower(power: number) {
-        dualMotorPower(Motor.M0, power)
-    }
-
-    /**
-    * Send break, coast or sleep commands to the motor. Has no effect in dual-motor mode.
-    */
-    //% blockId=motor_command block="motor %command"
-    //% parts=dcmotor weight=85
-    //% hidden=1 deprecated=1
-    export function motorCommand(command: MotorCommand) {
-        if(command == MotorCommand.Break) {
-            dualMotorPower(Motor.M0_M1, 0)
-        }
-    }
-
-    /**
     * Controls two motors attached to the board.
     */
     //% blockId=block_dual_motor block="motor %motor|at %percent \\%"
@@ -55,23 +21,49 @@ namespace motors {
     //% weight=80
     //% duty_percent.defl=100
     export function dualMotorPower(motor: Motor, duty_percent: number) {
+        const driverType = hardware._motorDriverType()
+        if (driverType === 0) return
 
-        pins.digitalWritePin(DigitalPin.M_MODE, 1);
+        pins.digitalWritePin(DigitalPin.M_MODE, 1)
 
-        const power = Math.clamp(-1023, 1023, Math.map(duty_percent, -100, 100, -1023, 1023));
-        
-        if (motor === Motor.M0 || motor === Motor.M0_M1) {
-            pins.digitalWritePin(DigitalPin.M0_DIR, ((power < 0) ? 1 : 0))
-            pins.analogWritePin(AnalogPin.M0_SPEED, Math.abs(power))
-        }
-    
-        if (motor === Motor.M1 || motor === Motor.M0_M1) {
-            pins.digitalWritePin(DigitalPin.M1_DIR, ((power < 0) ? 1 : 0))
-            pins.analogWritePin(AnalogPin.M1_SPEED, Math.abs(power))
+        if (driverType === 1) {
+            // Calliope v1/v2 DAL: single H-bridge DRV8837, bidirectional:
+            //   forward (power > 0): IN1=PWM, IN2=0
+            //   reverse (power < 0): IN1=0,   IN2=PWM
+            //   stop   (power = 0):  IN1=0,   IN2=0  → restores audio-ready state
+            const power = Math.clamp(-1023, 1023, Math.map(duty_percent, -100, 100, -1023, 1023))
+            pins.digitalWritePin(DigitalPin.M0_DIR, 0)
+            pins.digitalWritePin(DigitalPin.M1_DIR, 0)
+            if (power > 0) {
+                pins.analogWritePin(AnalogPin.M0_DIR, power)
+            } else if (power < 0) {
+                pins.analogWritePin(AnalogPin.M1_DIR, -power)
+            }
+        } else {
+            // Calliope v3 codal: dual H-bridge
+            const power = Math.clamp(-1023, 1023, Math.map(duty_percent, -100, 100, -1023, 1023))
+            if (motor === Motor.M0 || motor === Motor.M0_M1) {
+                pins.digitalWritePin(DigitalPin.M0_DIR, ((power < 0) ? 1 : 0))
+                pins.analogWritePin(AnalogPin.M0_SPEED, Math.abs(power))
+            }
+            if (motor === Motor.M1 || motor === Motor.M0_M1) {
+                pins.digitalWritePin(DigitalPin.M1_DIR, ((power < 0) ? 1 : 0))
+                pins.analogWritePin(AnalogPin.M1_SPEED, Math.abs(power))
+            }
         }
     }
 
 }
 
-
+// Calliope v1/v2 DAL: route music/tone blocks through the DRV8837 speaker on bootup.
+// DRV8837 truth table for the speaker config:
+//   IN1=0, IN2=1 → Reverse  → OUT1=L, OUT2=H  (current through speaker)
+//   IN1=1, IN2=1 → Brake    → OUT1=L, OUT2=L  (no current)
+// So: IN2 (M1_DIR) = static HIGH reference, IN1 (M0_DIR) = PWM audio signal.
+// OUT1 is always LOW; OUT2 swings with PWM → clean single-ended speaker drive.
+if (hardware._motorDriverType() === 1) {
+    pins.digitalWritePin(DigitalPin.M_MODE, 1)  // nSLEEP HIGH → driver active
+    pins.digitalWritePin(DigitalPin.M1_DIR, 1)  // IN2 = static HIGH (OUT2 reference)
+    pins.setAudioPin(DigitalPin.M0_DIR)          // IN1 = PWM audio → pitchPin = MOTOR_IN1
+}
 

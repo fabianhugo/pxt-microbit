@@ -228,6 +228,12 @@ MicroBitPin *getPin(int id) {
         case MICROBIT_ID_IO_M_MODE: return &uBit.io.M_MODE;
         case 1001: return &uBit.io.usbTx;
         case 1002: return &uBit.io.usbRx;
+#else
+        // Calliope v1/v2 DAL: single DRV8837 motor
+        // IDs aligned to codal: MOTOR_IN1=152=M_A_IN1, MOTOR_IN2=154=M_B_IN1, MOTOR_SLEEP=156=M_MODE
+        case MICROBIT_ID_IO_M_A_IN1: return &uBit.io.MOTOR_IN1;
+        case MICROBIT_ID_IO_M_B_IN1: return &uBit.io.MOTOR_IN2;
+        case MICROBIT_ID_IO_M_MODE:   return &uBit.io.MOTOR_SLEEP;
 #endif
         default: return NULL;
     }
@@ -246,6 +252,14 @@ namespace hardware {
         return 3;
 #else
         return 1;
+#endif
+    }
+    //%
+    int _motorDriverType() {
+#if MICROBIT_CODAL
+        return 2;  // Calliope v3 codal: dual H-bridge
+#else
+        return 1;  // Calliope v1/v2 DAL: single DRV8837
 #endif
     }
 } // hardware
@@ -516,7 +530,13 @@ namespace pins {
 #if MICROBIT_CODAL
             pitchPin = &uBit.audio.virtualOutputPin;
 #else
-            pitchPin = getPin((int)AnalogPin::P0);
+            // Calliope v1/v2 fallback (motors.ts startup normally sets this first):
+            // IN2 (MOTOR_IN2) = static HIGH reference, IN1 (MOTOR_IN1) = PWM audio.
+            // DRV8837: IN1=0,IN2=1 → Reverse; IN1=1,IN2=1 → Brake → OUT2 swings.
+            uBit.io.MOTOR_SLEEP.setDigitalValue(1); // nSLEEP HIGH → driver active
+            uBit.io.MOTOR_IN2.setDigitalValue(1);   // IN2 static HIGH
+            pitchPin = &uBit.io.MOTOR_IN1;          // IN1 = PWM audio
+            fiber_sleep(2);                         // tWAKE: DRV8837 needs ~1ms after nSLEEP
 #endif
         }
         // set pitch
@@ -535,6 +555,11 @@ namespace pins {
             // fiber_sleep(5);
         }
 #else
+        // Re-assert motor driver state before each tone.
+        // MOTOR_SLEEP and MOTOR_IN2 are on different nRF pins from pitchPin (MOTOR_IN1),
+        // so setDigitalValue here does NOT disrupt the analog/PWM state of pitchPin.
+        uBit.io.MOTOR_SLEEP.setDigitalValue(1); // keep nSLEEP active
+        uBit.io.MOTOR_IN2.setDigitalValue(1);   // restore IN2 static HIGH
         if (NULL != pitchPin && !edgeConnectorSoundDisabled)
             pinAnalogSetPitch(pitchPin, frequency, ms);
         // clear pitch
