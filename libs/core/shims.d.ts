@@ -697,6 +697,15 @@ declare namespace music {
     //% weight=1 level.defl=0 shim=music::setSilenceLevel
     function setSilenceLevel(level?: int32): void;
 }
+declare namespace hardware {
+
+    /**
+     * Returns the number of physically present RGB LEDs.
+     * 3 on Calliope mini v3 (codal), 1 on Calliope mini v1/v2 (DAL).
+     */
+    //% shim=hardware::_rgbLedCount
+    function _rgbLedCount(): int32;
+}
 declare namespace pins {
 
     /**

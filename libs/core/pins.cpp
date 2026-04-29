@@ -9,6 +9,32 @@
 #define PinCompat MicroBitPin
 #endif
 
+// Calliope-specific pins not defined in Lancaster micro:bit v1 DAL
+#ifndef MICROBIT_ID_IO_P17
+#define MICROBIT_ID_IO_P17 117
+#endif
+#ifndef MICROBIT_ID_IO_P18
+#define MICROBIT_ID_IO_P18 118
+#endif
+#ifndef MICROBIT_ID_IO_RGB
+#define MICROBIT_ID_IO_RGB 151
+#endif
+#ifndef MICROBIT_ID_IO_M_A_IN1
+#define MICROBIT_ID_IO_M_A_IN1 152
+#endif
+#ifndef MICROBIT_ID_IO_M_A_IN2
+#define MICROBIT_ID_IO_M_A_IN2 153
+#endif
+#ifndef MICROBIT_ID_IO_M_B_IN1
+#define MICROBIT_ID_IO_M_B_IN1 154
+#endif
+#ifndef MICROBIT_ID_IO_M_B_IN2
+#define MICROBIT_ID_IO_M_B_IN2 155
+#endif
+#ifndef MICROBIT_ID_IO_M_MODE
+#define MICROBIT_ID_IO_M_MODE 156
+#endif
+
 enum class DigitalPin {
     //% blockIdentity="pins._digitalPin"
     P0 = MICROBIT_ID_IO_P0,
@@ -45,11 +71,33 @@ enum class DigitalPin {
     //% blockIdentity="pins._digitalPin"
     P16 = MICROBIT_ID_IO_P16,
     //% blockIdentity="pins._digitalPin"
+    P17 = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._digitalPin"
+    P18 = MICROBIT_ID_IO_P18,
+    //% blockIdentity="pins._digitalPin"
     //% blockHidden=1
     P19 = MICROBIT_ID_IO_P19,
     //% blockIdentity="pins._digitalPin"
     //% blockHidden=1
     P20 = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M_MODE = MICROBIT_ID_IO_M_MODE,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M0_DIR = MICROBIT_ID_IO_M_A_IN1,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M1_DIR = MICROBIT_ID_IO_M_B_IN1,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M0_SPEED = MICROBIT_ID_IO_M_A_IN2,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    M1_SPEED = MICROBIT_ID_IO_M_B_IN2,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=1
+    RGB = MICROBIT_ID_IO_RGB,
 };
 
 enum class AnalogPin {
@@ -88,11 +136,30 @@ enum class AnalogPin {
     //% blockIdentity="pins._analogPin"
     P16 = MICROBIT_ID_IO_P16,
     //% blockIdentity="pins._analogPin"
+    P17 = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._analogPin"
+    P18 = MICROBIT_ID_IO_P18,
+    //% blockIdentity="pins._analogPin"
     //% blockHidden=1
     P19 = MICROBIT_ID_IO_P19,
     //% blockIdentity="pins._analogPin"
     //% blockHidden=1
-    P20 = MICROBIT_ID_IO_P20
+    P20 = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M_MODE = MICROBIT_ID_IO_M_MODE,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M0_DIR = MICROBIT_ID_IO_M_A_IN1,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M1_DIR = MICROBIT_ID_IO_M_B_IN1,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M0_SPEED = MICROBIT_ID_IO_M_A_IN2,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=1
+    M1_SPEED = MICROBIT_ID_IO_M_B_IN2
 };
 
 enum class PulseValue {
@@ -144,17 +211,58 @@ MicroBitPin *getPin(int id) {
         case MICROBIT_ID_IO_P14: return &uBit.io.P14;
         case MICROBIT_ID_IO_P15: return &uBit.io.P15;
         case MICROBIT_ID_IO_P16: return &uBit.io.P16;
+#if MICROBIT_CODAL
+        case MICROBIT_ID_IO_P17: return &uBit.io.P17;
+        case MICROBIT_ID_IO_P18: return &uBit.io.P18;
+#endif
         case MICROBIT_ID_IO_P19: return &uBit.io.P19;
         case MICROBIT_ID_IO_P20: return &uBit.io.P20;
+#ifdef MICROBIT_PIN_RGB
+        case MICROBIT_ID_IO_RGB: return &uBit.io.RGB; // All Calliope variants (v1/v2 DAL, v3 codal)
+#endif
 #if MICROBIT_CODAL
+        case MICROBIT_ID_IO_M_A_IN1: return &uBit.io.M_A_IN1;
+        case MICROBIT_ID_IO_M_A_IN2: return &uBit.io.M_A_IN2;
+        case MICROBIT_ID_IO_M_B_IN1: return &uBit.io.M_B_IN1;
+        case MICROBIT_ID_IO_M_B_IN2: return &uBit.io.M_B_IN2;
+        case MICROBIT_ID_IO_M_MODE: return &uBit.io.M_MODE;
         case 1001: return &uBit.io.usbTx;
         case 1002: return &uBit.io.usbRx;
+#else
+        // Calliope v1/v2 DAL: single DRV8837 motor
+        // IDs aligned to codal: MOTOR_IN1=152=M_A_IN1, MOTOR_IN2=154=M_B_IN1, MOTOR_SLEEP=156=M_MODE
+        case MICROBIT_ID_IO_M_A_IN1: return &uBit.io.MOTOR_IN1;
+        case MICROBIT_ID_IO_M_B_IN1: return &uBit.io.MOTOR_IN2;
+        case MICROBIT_ID_IO_M_MODE:   return &uBit.io.MOTOR_SLEEP;
 #endif
         default: return NULL;
     }
 }
 
 } // pxt
+
+namespace hardware {
+    /**
+     * Returns the number of physically present RGB LEDs.
+     * 3 on Calliope mini v3 (codal), 1 on Calliope mini v1/v2 (DAL).
+     */
+    //%
+    int _rgbLedCount() {
+#if MICROBIT_CODAL
+        return 3;
+#else
+        return 1;
+#endif
+    }
+    //%
+    int _motorDriverType() {
+#if MICROBIT_CODAL
+        return 2;  // Calliope v3 codal: dual H-bridge
+#else
+        return 1;  // Calliope v1/v2 DAL: single DRV8837
+#endif
+    }
+} // hardware
 
 namespace pins {
     #define PINOP(op) \
@@ -422,7 +530,13 @@ namespace pins {
 #if MICROBIT_CODAL
             pitchPin = &uBit.audio.virtualOutputPin;
 #else
-            pitchPin = getPin((int)AnalogPin::P0);
+            // Calliope v1/v2 fallback (motors.ts startup normally sets this first):
+            // IN2 (MOTOR_IN2) = static HIGH reference, IN1 (MOTOR_IN1) = PWM audio.
+            // DRV8837: IN1=0,IN2=1 → Reverse; IN1=1,IN2=1 → Brake → OUT2 swings.
+            uBit.io.MOTOR_SLEEP.setDigitalValue(1); // nSLEEP HIGH → driver active
+            uBit.io.MOTOR_IN2.setDigitalValue(1);   // IN2 static HIGH
+            pitchPin = &uBit.io.MOTOR_IN1;          // IN1 = PWM audio
+            fiber_sleep(2);                         // tWAKE: DRV8837 needs ~1ms after nSLEEP
 #endif
         }
         // set pitch
@@ -441,6 +555,11 @@ namespace pins {
             // fiber_sleep(5);
         }
 #else
+        // Re-assert motor driver state before each tone.
+        // MOTOR_SLEEP and MOTOR_IN2 are on different nRF pins from pitchPin (MOTOR_IN1),
+        // so setDigitalValue here does NOT disrupt the analog/PWM state of pitchPin.
+        uBit.io.MOTOR_SLEEP.setDigitalValue(1); // keep nSLEEP active
+        uBit.io.MOTOR_IN2.setDigitalValue(1);   // restore IN2 static HIGH
         if (NULL != pitchPin && !edgeConnectorSoundDisabled)
             pinAnalogSetPitch(pitchPin, frequency, ms);
         // clear pitch

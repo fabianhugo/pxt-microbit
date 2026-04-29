@@ -22,6 +22,8 @@ enum AnalogReadWritePin {
     P4 = AnalogPin.P4,
     //% blockIdentity="pins._analogReadWritePinShadow"
     P10 = AnalogPin.P10,
+    //% blockIdentity="pins._analogReadWritePinShadow"
+    P16 = AnalogPin.P16,
 }
 
 //% noRefCounting fixedInstances
