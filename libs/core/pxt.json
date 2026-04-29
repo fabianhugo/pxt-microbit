@@ -64,6 +64,7 @@
         "light.cpp",
         "logo.cpp",
         "rgbled.ts",
+        "hardware.ts",
         "motors.ts",
         "loops.ts",
         "touchmode.cpp",
