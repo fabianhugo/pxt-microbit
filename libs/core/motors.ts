@@ -27,18 +27,11 @@ namespace motors {
         pins.digitalWritePin(DigitalPin.M_MODE, 1)
 
         if (driverType === 1) {
-            // Calliope v1/v2 DAL: single H-bridge DRV8837, bidirectional:
-            //   forward (power > 0): IN1=PWM, IN2=0
-            //   reverse (power < 0): IN1=0,   IN2=PWM
-            //   stop   (power = 0):  IN1=0,   IN2=0  → restores audio-ready state
-            const power = Math.clamp(-1023, 1023, Math.map(duty_percent, -100, 100, -1023, 1023))
-            pins.digitalWritePin(DigitalPin.M0_DIR, 0)
-            pins.digitalWritePin(DigitalPin.M1_DIR, 0)
-            if (power > 0) {
-                pins.analogWritePin(AnalogPin.M0_DIR, power)
-            } else if (power < 0) {
-                pins.analogWritePin(AnalogPin.M1_DIR, -power)
-            }
+            // Calliope v1/v2: single DRV8837; M0 → IN1 (M0_DIR), M1 → IN2 (M1_DIR)
+            // Each channel is unidirectional — negative duty_percent is treated as 0 (stop)
+            const power = Math.clamp(0, 1023, Math.map(duty_percent, 0, 100, 0, 1023))
+            pins.analogWritePin(AnalogPin.M0_DIR, (motor === Motor.M0 || motor === Motor.M0_M1) ? power : 0)
+            pins.analogWritePin(AnalogPin.M1_DIR, (motor === Motor.M1 || motor === Motor.M0_M1) ? power : 0)
         } else {
             // Calliope v3 codal: dual H-bridge
             const power = Math.clamp(-1023, 1023, Math.map(duty_percent, -100, 100, -1023, 1023))
