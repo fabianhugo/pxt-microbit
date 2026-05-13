@@ -68,7 +68,7 @@ namespace basic {
     //% help=basic/set-led-colors
     //% blockId=device_set_led_colors
     //% block="set LEDs to %color1=colorNumberPicker|%color2=colorNumberPicker|%color3=colorNumberPicker"
-    //% color1.defl=0xff0000 color2.defl=0x000000 color3.defl=0x000000
+    //% color1.defl=0xff0000 color2.defl=0xff0080 color3.defl=0xff00ff
     //% weight=11 group="RGB LED"
     export function setLedColors(color1: number, color2: number, color3: number): void {
         if (hardware._rgbLedCount() < 3) return

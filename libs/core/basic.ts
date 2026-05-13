@@ -1,3 +1,5 @@
+//% color=#54C9C9 weight=100 icon="\uf00a"
+//% groups=['LED matrix', 'Control', 'RGB LED', 'others']
 namespace basic {
 
     /**

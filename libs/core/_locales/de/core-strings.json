@@ -1,0 +1,8 @@
+{
+  "Motor.M0_M1|block": "M0 & M1",
+  "Motor.M0|block": "M0",
+  "Motor.M1|block": "M1",
+  "motors.dualMotorPower|block": "Motor %motor|mit %percent \\%",
+  "motors|block": "Motoren",
+  "{id:category}Motors": "Motoren"
+}
