@@ -948,3 +948,302 @@ export function mkDAPLinkPacketIOWrapper(io: pxt.packetio.PacketIO): pxt.packeti
     pxt.log(`packetio: mk wrapper dap wrapper`)
     return new DAPWrapper(io);
 }
+
+// === Calliope mini v2 support (SEGGER J-Link OB) ===
+
+const JLINK_VID = 0x1366;  // SEGGER
+const JLINK_PID = 0x1025;  // Calliope mini v2
+const JLINK_INTERFACE = 2; // Vendor-specific interface for J-Link commands
+
+// J-Link MSD protocol commands (captured from SEGGER's WebUSB demo)
+const EMU_CMD_GET_CAPS_EX    = 0xED; // Query extended capabilities -> 32 bytes
+const EMU_CMD_GET_PROBE_INFO = 0x1C; // Probe info / MSD operations
+const PROBE_INFO_GET_CAPS    = 0;    // Subcommand: get probe capabilities -> 4 bytes
+const PROBE_INFO_WRITE_CHUNK = 5;    // Subcommand: write 4 KB hex chunk
+const PROBE_INFO_WRITE_END   = 6;    // Subcommand: finalise flash -> 4-byte status
+const JLINK_MSD_CHUNK_SIZE   = 4096; // Probe expects 4 KB chunks
+
+function jlinkBuildGetCapsExCmd(): Uint8Array {
+    return new Uint8Array([EMU_CMD_GET_CAPS_EX]);
+}
+
+function jlinkBuildProbeInfoCmd(sub: number, data?: Uint8Array): Uint8Array {
+    if (data) {
+        const pkt = new Uint8Array(6 + data.length);
+        pkt[0] = EMU_CMD_GET_PROBE_INFO;
+        pkt[1] = sub;
+        pkt[2] = data.length & 0xFF;
+        pkt[3] = (data.length >> 8) & 0xFF;
+        pkt[4] = 0x00;
+        pkt[5] = 0x00;
+        pkt.set(data, 6);
+        return pkt;
+    }
+    return new Uint8Array([EMU_CMD_GET_PROBE_INFO, sub]);
+}
+
+/**
+ * PacketIOWrapper for Calliope mini v2 (SEGGER J-Link OB interface).
+ *
+ * Flash protocol: J-Link MSD — send Intel HEX as 4 KB chunks directly
+ * to the probe; it handles erase, program, verify and reset internally.
+ * No partial-flashing support; every download is a full flash.
+ *
+ * Serial (CDC) works on Windows/macOS.  On Linux the kernel's cdc_acm
+ * driver claims the CDC interfaces before WebUSB can, so serial is
+ * unavailable there (flashing still works on all platforms).
+ */
+class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
+    icon = "xicon microbit";
+    familyID = 0x9902;   // synthetic ID for Calliope v2
+    onSerial: (buf: Uint8Array, isStderr: boolean) => void = () => {};
+    onCustomEvent: (type: string, payload: Uint8Array) => void = () => {};
+    devVariant = "mbdal"; // Calliope v2 uses the same mbdal hex as v1
+
+    private initialized = false;
+    private connecting  = false;
+    private jlinkInEP   = 3;   // defaults for Calliope v2.0; auto-detected below
+    private jlinkOutEP  = 2;
+    private disconnectListener: (ev: pxt.usb.USBConnectionEvent) => void = null;
+    private connectListener:    (ev: pxt.usb.USBConnectionEvent) => void = null;
+
+    constructor(
+        public readonly io: pxt.packetio.PacketIO,
+        private device: pxt.usb.USBDevice,
+    ) {}
+
+    isConnected()  { return this.initialized; }
+    isConnecting() { return this.connecting;  }
+
+    async reconnectAsync(): Promise<void> {
+        if (this.connecting) {
+            log("jlink: reconnect already in progress, skipping");
+            return;
+        }
+        log("jlink: reconnect");
+        this.removeDisconnectListener();
+        this.removeConnectListener();
+        this.initialized = false;
+        this.connecting  = true;
+        this.io.onConnectionChanged();
+
+        try {
+            if (!this.device.opened)
+                await this.device.open();
+            try { await this.device.selectConfiguration(1); } catch (e) {
+                // already configured by the OS — not fatal
+                log(`jlink: selectConfiguration ignored: ${(e as Error).message}`);
+            }
+
+            // Detect endpoint numbers (they differ between Calliope v2.0 and v2.1)
+            const jlinkIface = this.device.configurations[0]?.interfaces
+                .find((i: pxt.usb.USBInterface) => i.interfaceNumber === JLINK_INTERFACE);
+            if (jlinkIface) {
+                for (const ep of jlinkIface.alternate.endpoints) {
+                    if (ep.direction === "in") this.jlinkInEP  = ep.endpointNumber;
+                    else                       this.jlinkOutEP = ep.endpointNumber;
+                }
+            }
+            log(`jlink: endpoints in=${this.jlinkInEP} out=${this.jlinkOutEP}`);
+
+            await this.device.claimInterface(JLINK_INTERFACE);
+            log("jlink: interface claimed");
+
+            // Handshake: verify the probe supports MSD flashing
+            const capsResp = await this.sendCmd(jlinkBuildGetCapsExCmd());
+            if (capsResp.byteLength !== 32)
+                throw new Error(`J-Link GET_CAPS_EX: expected 32 B, got ${capsResp.byteLength}`);
+
+            const probeResp = await this.sendCmd(jlinkBuildProbeInfoCmd(PROBE_INFO_GET_CAPS));
+            if (probeResp.byteLength !== 4)
+                throw new Error(`J-Link GET_PROBE_INFO: expected 4 B, got ${probeResp.byteLength}`);
+
+            const caps = probeResp[0] | (probeResp[1] << 8) | (probeResp[2] << 16) | (probeResp[3] << 24);
+            if (!(caps & 0x01))
+                throw new Error("J-Link probe does not support MSD flashing");
+
+            // Watch for unplug; when the device comes back, reconnect automatically.
+            this.disconnectListener = (ev: pxt.usb.USBConnectionEvent) => {
+                if (ev.device !== this.device) return;
+                log("jlink: device disconnected");
+                this.initialized = false;
+                this.connecting  = false;
+                this.removeDisconnectListener();
+                this.io.onConnectionChanged();
+
+                // Re-connect as soon as the same device is plugged back in.
+                this.connectListener = (cev: pxt.usb.USBConnectionEvent) => {
+                    if (cev.device.vendorId !== JLINK_VID || cev.device.productId !== JLINK_PID) return;
+                    log("jlink: device reconnected");
+                    this.device = cev.device;   // update to fresh device object
+                    this.removeConnectListener();
+                    this.reconnectAsync().catch((err: Error) => {
+                        log(`jlink: auto-reconnect failed: ${err.message}`);
+                        this.initialized = false;
+                        this.connecting  = false;
+                        this.io.onConnectionChanged();
+                    });
+                };
+                navigator.usb?.addEventListener("connect", this.connectListener);
+            };
+            navigator.usb?.addEventListener("disconnect", this.disconnectListener);
+
+            log("jlink: ready");
+            this.initialized = true;
+            this.connecting  = false;
+            this.io.onConnectionChanged();
+        } catch (e) {
+            log(`jlink: reconnect error: ${(e as Error).message}`);
+            this.initialized = false;
+            this.connecting  = false;
+            this.removeDisconnectListener();
+            this.removeConnectListener();
+            this.io.onConnectionChanged();
+            throw e;
+        }
+    }
+
+    async disconnectAsync(): Promise<void> {
+        log("jlink: disconnect");
+        this.initialized = false;
+        this.connecting  = false;
+        this.removeDisconnectListener();
+        this.removeConnectListener();
+        if (this.device.opened) {
+            try { await this.device.releaseInterface(JLINK_INTERFACE); } catch (e) { }
+            await this.device.close();
+        }
+        await this.io.disconnectAsync();
+    }
+
+    private removeDisconnectListener(): void {
+        if (this.disconnectListener) {
+            navigator.usb?.removeEventListener("disconnect", this.disconnectListener);
+            this.disconnectListener = null;
+        }
+    }
+
+    private removeConnectListener(): void {
+        if (this.connectListener) {
+            navigator.usb?.removeEventListener("connect", this.connectListener);
+            this.connectListener = null;
+        }
+    }
+
+    async reflashAsync(resp: pxtc.CompileResult, progressCallback?: (p: number) => void): Promise<void> {
+        log("jlink: reflash");
+        pxt.tickEvent("hid.jlink.flash.start");
+
+        const hexFile = resp.outfiles["mbdal-" + pxtc.BINARY_HEX];
+        if (!hexFile)
+            throw new Error(lf("Download failed: firmware not found"));
+
+        const data = pxt.U.stringToUint8Array(hexFile);
+        const totalChunks = Math.ceil(data.length / JLINK_MSD_CHUNK_SIZE);
+        for (let i = 0; i < totalChunks; i++) {
+            const chunk = data.slice(
+                i * JLINK_MSD_CHUNK_SIZE,
+                Math.min((i + 1) * JLINK_MSD_CHUNK_SIZE, data.length)
+            );
+            await this.sendCmd(jlinkBuildProbeInfoCmd(PROBE_INFO_WRITE_CHUNK, chunk), false);
+            if (progressCallback) progressCallback((i + 1) / totalChunks);
+        }
+
+        const finResp = await this.sendCmd(jlinkBuildProbeInfoCmd(PROBE_INFO_WRITE_END));
+        if (finResp.byteLength !== 4)
+            throw new Error(`J-Link finalize: expected 4 B, got ${finResp.byteLength}`);
+
+        const result = finResp[0] | (finResp[1] << 8) | (finResp[2] << 16) | (finResp[3] << 24);
+        if (result !== 0)
+            throw new Error(lf("Download failed (J-Link error {0})", result));
+
+        pxt.tickEvent("hid.jlink.flash.success");
+    }
+
+    sendCustomEventAsync(_type: string, _payload: Uint8Array): Promise<void> {
+        return Promise.resolve();
+    }
+
+    unsupportedParts(): string[] {
+        // mbdal firmware: same constraints as Calliope v1
+        return ["logotouch", "builtinspeaker", "microphone", "flashlog", "v2"];
+    }
+
+    private async sendCmd(cmd: Uint8Array, expectResp = true): Promise<Uint8Array> {
+        await this.device.transferOut(this.jlinkOutEP, cmd);
+        if (!expectResp) return new Uint8Array(0);
+        const res = await this.device.transferIn(this.jlinkInEP, 4096);
+        if (!res.data) throw new Error("No response from J-Link probe");
+        return new Uint8Array(res.data.buffer);
+    }
+}
+
+/**
+ * Top-level wrapper that routes to JLinkPacketIOWrapper (Calliope v2) or
+ * DAPWrapper (Calliope v1/v3) depending on which USB device is connected.
+ * Detection happens asynchronously at the start of reconnectAsync().
+ */
+class CalliopeWrapper implements pxt.packetio.PacketIOWrapper {
+    readonly io: pxt.packetio.PacketIO;
+    icon     = "xicon microbit";
+    familyID = 0x0D28;
+    onSerial:      (buf: Uint8Array, isStderr: boolean) => void = () => {};
+    onCustomEvent: (type: string, payload: Uint8Array) => void  = () => {};
+
+    private dap:   DAPWrapper;
+    private jlink: JLinkPacketIOWrapper | null = null;
+
+    private get _active(): DAPWrapper | JLinkPacketIOWrapper {
+        return this.jlink ?? this.dap;
+    }
+
+    constructor(io: pxt.packetio.PacketIO) {
+        this.io  = io;
+        this.dap = new DAPWrapper(io);
+        // Override the device-change handler set by DAPWrapper so reconnects
+        // go through CalliopeWrapper and can re-detect the device type.
+        this.io.onDeviceConnectionChanged = async (connect: boolean) => {
+            log(`device connection changed: ${connect}`);
+            if (!connect) { await this.disconnectAsync(); return; }
+            await this.reconnectAsync();
+        };
+    }
+
+    async reconnectAsync(): Promise<void> {
+        const devices   = await (navigator.usb?.getDevices() ?? Promise.resolve([] as pxt.usb.USBDevice[]));
+        const jlinkDev  = devices.find(d => d.vendorId === JLINK_VID && d.productId === JLINK_PID);
+        if (jlinkDev) {
+            // If JLinkPacketIOWrapper already registered its own connect listener and
+            // is in the middle of reconnecting, don't start a second attempt.
+            if (this.jlink?.isConnecting()) return;
+            if (!this.jlink)
+                this.jlink = new JLinkPacketIOWrapper(this.io, jlinkDev);
+            this.jlink.onSerial      = this.onSerial;
+            this.jlink.onCustomEvent = this.onCustomEvent;
+            this.familyID            = this.jlink.familyID;
+            return this.jlink.reconnectAsync();
+        }
+        this.jlink               = null;
+        this.dap.onSerial        = this.onSerial;
+        this.dap.onCustomEvent   = this.onCustomEvent;
+        this.familyID            = this.dap.familyID;
+        return this.dap.reconnectAsync();
+    }
+
+    disconnectAsync() { return this._active.disconnectAsync(); }
+    isConnected()     { return this._active.isConnected(); }
+    isConnecting()    { return this._active.isConnecting(); }
+    reflashAsync(resp: pxtc.CompileResult, progress?: (p: number) => void) {
+        return this._active.reflashAsync(resp, progress);
+    }
+    sendCustomEventAsync(type: string, payload: Uint8Array) {
+        return this._active.sendCustomEventAsync(type, payload);
+    }
+    unsupportedParts() { return this._active.unsupportedParts?.() ?? []; }
+    get devVariant()   { return (this._active as any).devVariant as string | undefined; }
+}
+
+export function mkPacketIOWrapper(io: pxt.packetio.PacketIO): pxt.packetio.PacketIOWrapper {
+    pxt.log(`packetio: mk calliope wrapper`);
+    return new CalliopeWrapper(io);
+}
