@@ -246,9 +246,9 @@
     "simulator": {
         "autoRun": true,
         "streams": false,
-        "aspectRatio": 1.22,
+        "aspectRatio": 0.94,
         "parts": true,
-        "partsAspectRatio": 0.69,
+        "partsAspectRatio": 0.94,
         "messageSimulators": {
             "robot": {
                 "url": "https://microsoft.github.io/microbit-robot/?parentOrigin=$PARENT_ORIGIN$",

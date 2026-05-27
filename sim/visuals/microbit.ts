@@ -2111,7 +2111,26 @@ namespace pxsim.visuals {
 			"G_A1_GND": [
 				228.56060028076172,
 				83.44330978393555
-			]
+			],
+			// Standard GPIO pin names used by BoardHost for breadboard/parts wiring
+			// Touch rings (croc style): P0-P3, GND, +3v3
+			"P0": [8.1, 264.9],    // TOUCH_P0 center, left side
+			"P1": [137.1, 485.5],  // TOUCH_P1 center, bottom-left
+			"P2": [392.7, 485.5],  // TOUCH_P2 center, bottom-right
+			"P3": [520.9, 264.9],  // TOUCH_P3 center, right side
+			"GND": [137.1, 43.5],  // TOUCH_GND center, top-left
+			"+3v3": [392.7, 43.5], // TOUCH_VCC center, top-right
+			// Edge connector header pins
+			"P4": [213.2, 439.6],
+			"P5": [213.2, 422.0],
+			"P6": [230.7, 439.6],
+			"P7": [230.7, 422.0],
+			"P8": [248.2, 439.6],
+			"P9": [248.2, 422.0],
+			"P10": [283.2, 439.6],
+			"P11": [283.2, 422.0],
+			"P12": [300.7, 439.6],
+			"P16": [335.7, 439.6]
 		};
 
         constructor(public props: IBoardProps) {
@@ -2856,7 +2875,13 @@ namespace pxsim.visuals {
 
             if (pin.mode & PinFlags.Analog) {
                 v = Math.floor(100 - (pin.value || 0) / 1023 * 100) + "%";
-                if (text) text.textContent = (pin.period ? "~" : "") + (pin.value || 0) + "";
+                if (text) {
+                    if (pin.pitch && pin.period) {
+                        text.textContent = "\u266A"; // musical note — audio pitch output
+                    } else {
+                        text.textContent = (pin.period ? "~" : "") + (pin.value || 0) + "";
+                    }
+                }
             }
             else if (pin.mode & PinFlags.Digital) {
                 v = pin.value > 511 ? "0%" : "100%";
