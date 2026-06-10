@@ -20,6 +20,7 @@ namespace motors {
     //% percent.shadow="speedPicker"
     //% weight=80
     //% duty_percent.defl=100
+    //% parts="motor" trackArgs=0
     export function dualMotorPower(motor: Motor, duty_percent: number) {
         const driverType = hardware._motorDriverType()
         if (driverType === 0) return

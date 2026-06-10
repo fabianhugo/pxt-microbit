@@ -1,7 +1,8 @@
 namespace pxsim.control {
 
+    // Reported by control.hardwareVersion(); Calliope mini v3 simulator identifies as "3".
     export function _hardwareVersion() {
-        return "0.0";
+        return board().hardwareVersion >= 3 ? "3" : "2";
     }
 
 }

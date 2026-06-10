@@ -27,7 +27,6 @@ namespace pxsim.pins {
         let pin = getPin(pinId);
         if (!pin) return -1;
         pin.mode = PinFlags.Digital | PinFlags.Input;
-        console.log(pin.value)
         return pin.value >= 1 ? 1 : 0;
     }
 
@@ -125,16 +124,20 @@ namespace pxsim.pins {
         const ec = b.edgeConnectorState;
         const pins = ec.pins;
         const pin = ec.pitchEnabled && (pins.filter(pin => !!pin && pin.pitch)[0] || pins[0]);
+        // Only an explicitly-routed audio pin (via pins.setAudioPin) is shown on the board.
+        // By default audio plays through the built-in speaker, so the fallback pin (P0) must
+        // not light up with a "~"/value — we visualize only when a pitch pin was set.
+        const visualPin = ec.pitchEnabled ? (pins.filter(p => !!p && p.pitch)[0] || null) : null;
         const pitchVolume = ec.pitchVolume | 0;
-        if (pin && !edgeConnectorSoundDisabled) {
-            pin.mode = PinFlags.Analog | PinFlags.Output;
+        if (visualPin && !edgeConnectorSoundDisabled) {
+            visualPin.mode = PinFlags.Analog | PinFlags.Output;
             if (frequency <= 0 || pitchVolume <= 0) {
-                pin.value = 0;
-                pin.period = 0;
+                visualPin.value = 0;
+                visualPin.period = 0;
             } else {
                 const v = 1 << (pitchVolume >> 5);
-                pin.value = v;
-                pin.period = 1000000 / frequency;
+                visualPin.value = v;
+                visualPin.period = 1000000 / frequency;
             }
             runtime.queueDisplayUpdate();
         }
@@ -148,10 +151,10 @@ namespace pxsim.pins {
         else {
             setTimeout(() => {
                 AudioContextManager.stop();
-                if (pin && !edgeConnectorSoundDisabled) {
-                    pin.value = 0;
-                    pin.period = 0;
-                    pin.mode = PinFlags.Unused;
+                if (visualPin && !edgeConnectorSoundDisabled) {
+                    visualPin.value = 0;
+                    visualPin.period = 0;
+                    visualPin.mode = PinFlags.Unused;
                 }
                 runtime.queueDisplayUpdate();
                 cb()

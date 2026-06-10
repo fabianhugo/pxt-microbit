@@ -206,7 +206,7 @@
                 "codalBinary": "MICROBIT",
                 "githubCorePackage": "lancaster-university/microbit-v2-samples",
                 "gittag": "v0.2.13",
-                "serviceId": "mbcodal2-calliope3",
+                "serviceId": "mbcodal2",
                 "dockerImage": "pext/yotta:update-yotta3",
                 "yottaConfigCompatibility": true
             }
@@ -347,21 +347,16 @@
                 "microphone",
                 "logotouch",
                 "flashlog",
+                "motor",
 
                 "v2"
             ],
-            "pinStyles": {
-                "P0": "croc",
-                "P1": "croc",
-                "P2": "croc",
-                "GND": "croc",
-                "+3v3": "croc"
-            },
+            "pinStyles": {},
             "marginWhenBreadboarding": [
                 0,
-                0,
+                50,
                 80,
-                0
+                50
             ]
         }
     },
