@@ -1248,12 +1248,14 @@ namespace pxsim.visuals {
 
             // plus/minus are the M0±/M1± Steckleiste pad centers (rect xy + 7.5), hardcoded so
             // the cables reliably plug into the header (getBBox can return 0 before layout).
-            // Both motors sit on the right-hand side next to the servos; M1 is above M0.
-            // plus/minus are the M0±/M1± Steckleiste pad centers (rect xy + 7.5), hardcoded so
-            // the cables reliably plug into the header (getBBox can return 0 before layout).
+            // M0 is on the inner row (y=398.9), M1 on the outer row (y=381.7); both rows share the
+            // same x, so when both motors are shown their cables would run on top of each other near
+            // the header. Nudge the pads apart in x (same trick as the GND/+3v3 split): M0's pads go
+            // left and M1's go right, matching their body order (M0 bodyX=400, M1 bodyX=475) so the
+            // cables stay separated and don't cross.
             const MOTORS = [
-                { speedPin: DAL.MICROBIT_ID_IO_M_A_IN2, dirPin: DAL.MICROBIT_ID_IO_M_A_IN1, plus: [352.6, 398.9], minus: [369.4, 398.9], bodyX: 400, bodyY: 580, label: "M0" },
-                { speedPin: DAL.MICROBIT_ID_IO_M_B_IN2, dirPin: DAL.MICROBIT_ID_IO_M_B_IN1, plus: [352.6, 381.7], minus: [369.4, 381.7], bodyX: 475, bodyY: 580, label: "M1" }
+                { speedPin: DAL.MICROBIT_ID_IO_M_A_IN2, dirPin: DAL.MICROBIT_ID_IO_M_A_IN1, plus: [351, 398.9], minus: [367, 398.9], bodyX: 400, bodyY: 580, label: "M0" },
+                { speedPin: DAL.MICROBIT_ID_IO_M_B_IN2, dirPin: DAL.MICROBIT_ID_IO_M_B_IN1, plus: [355, 381.7], minus: [371, 381.7], bodyX: 475, bodyY: 580, label: "M1" }
             ];
 
             if (!this.motorRotors) { this.motorRotors = []; this.motorGroups = []; }
