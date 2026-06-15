@@ -162,6 +162,21 @@ enum class MesDpadButtonInfo {
 //% color=#D400D4 weight=111 icon="\uf192"
 namespace input {
     /**
+     * Do something when a button (A, B or both A+B) receives an event.
+     * @param button the button
+     * @param eventType event type
+     * @param body code to run when event is raised
+     */
+    //% help=input/on-button-event weight=100 blockGap=16
+    //% blockId=device_button_selected_event block="on button %NAME| %eventType"
+    //% eventType.shadow="control_button_event_click"
+    //% parts="buttonpair"
+    //% group="Events"
+    void onButtonEvent(Button button, int eventType, Action body) {
+        registerWithDal((int)button, eventType, body);
+    }
+
+    /**
      * Do something when a button (A, B or both A+B) is pushed down and released again.
      * @param button the button that needs to be pressed
      * @param body code to run when event is raised
@@ -169,8 +184,9 @@ namespace input {
     //% help=input/on-button-pressed weight=85 blockGap=16
     //% blockId=device_button_event block="on button|%NAME|pressed"
     //% parts="buttonpair"
+    //% deprecated=true
     void onButtonPressed(Button button, Action body) {
-        registerWithDal((int)button, MICROBIT_BUTTON_EVT_CLICK, body);
+        onButtonEvent(button, MICROBIT_BUTTON_EVT_CLICK, body);
     }
 
     /**
@@ -207,19 +223,34 @@ namespace input {
     }
 
      /**
+     * Do something when a pin receives a touch event (while also touching the GND pin).
+     * @param name the pin, eg: TouchPin.P0
+     * @param eventType event type
+     * @param body the code to run when event is fired on pin
+     */
+    //% help=input/on-pin-event weight=99 blockGap=16
+    //% blockId=device_pin_custom_event block="on pin %name| %eventType"
+    //% eventType.shadow="control_button_event_down"
+    //% group="Events"
+    void onPinTouchEvent(TouchPin name, int eventType, Action body) {
+        auto pin = getPin((int)name);
+        if (!pin) return;
+
+        // Forces the PIN to switch to makey-makey style detection.
+        pin->isTouched();
+        registerWithDal((int)name, eventType, body);
+    }
+
+     /**
      * Do something when a pin is touched and released again (while also touching the GND pin).
      * @param name the pin that needs to be pressed, eg: TouchPin.P0
      * @param body the code to run when the pin is pressed
      */
     //% help=input/on-pin-pressed weight=83 blockGap=32
     //% blockId=device_pin_event block="on pin %name|pressed"
+    //% deprecated=true
     void onPinPressed(TouchPin name, Action body) {
-        auto pin = getPin((int)name);
-        if (!pin) return;
-
-        // Forces the PIN to switch to makey-makey style detection.
-        pin->isTouched();
-        registerWithDal((int)name, MICROBIT_BUTTON_EVT_CLICK, body);
+        onPinTouchEvent(name, MICROBIT_BUTTON_EVT_CLICK, body);
     }
 
     /**

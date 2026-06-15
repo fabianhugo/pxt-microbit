@@ -3,8 +3,18 @@ namespace pxsim.input {
         let pin = getPin(pinId);
         if (!pin) return;
         pin.isTouched();
-        runtime.queueDisplayUpdate(); 
+        runtime.queueDisplayUpdate();
         pxtcore.registerWithDal(pin.id, pinEvent, handler);
+    }
+
+    // Deprecated pin blocks delegate to onPinTouchEvent (mirrors libs/core/input.cpp), so existing
+    // programs using "on pin pressed/released" still work in the simulator.
+    export function onPinPressed(pinId: number, handler: RefAction) {
+        onPinTouchEvent(pinId, DAL.MICROBIT_BUTTON_EVT_CLICK, handler);
+    }
+
+    export function onPinReleased(pinId: number, handler: RefAction) {
+        onPinTouchEvent(pinId, DAL.MICROBIT_BUTTON_EVT_UP, handler);
     }
 
     export function pinIsPressed(pinId: number): boolean {

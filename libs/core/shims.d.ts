@@ -209,13 +209,27 @@ declare namespace basic {
 declare namespace input {
 
     /**
+     * Do something when a button (A, B or both A+B) receives an event.
+     * @param button the button
+     * @param eventType event type
+     * @param body code to run when event is raised
+     */
+    //% help=input/on-button-event weight=100 blockGap=16
+    //% blockId=device_button_selected_event block="on button %NAME| %eventType"
+    //% eventType.shadow="control_button_event_click"
+    //% parts="buttonpair"
+    //% group="Events" shim=input::onButtonEvent
+    function onButtonEvent(button: Button, eventType: int32, body: () => void): void;
+
+    /**
      * Do something when a button (A, B or both A+B) is pushed down and released again.
      * @param button the button that needs to be pressed
      * @param body code to run when event is raised
      */
     //% help=input/on-button-pressed weight=85 blockGap=16
     //% blockId=device_button_event block="on button|%NAME|pressed"
-    //% parts="buttonpair" shim=input::onButtonPressed
+    //% parts="buttonpair"
+    //% deprecated=true shim=input::onButtonPressed
     function onButtonPressed(button: Button, body: () => void): void;
 
     /**
@@ -240,12 +254,25 @@ declare namespace input {
     function isGesture(gesture: Gesture): boolean;
 
     /**
+     * Do something when a pin receives a touch event (while also touching the GND pin).
+     * @param name the pin, eg: TouchPin.P0
+     * @param eventType event type
+     * @param body the code to run when event is fired on pin
+     */
+    //% help=input/on-pin-event weight=99 blockGap=16
+    //% blockId=device_pin_custom_event block="on pin %name| %eventType"
+    //% eventType.shadow="control_button_event_down"
+    //% group="Events" shim=input::onPinTouchEvent
+    function onPinTouchEvent(name: TouchPin, eventType: int32, body: () => void): void;
+
+    /**
      * Do something when a pin is touched and released again (while also touching the GND pin).
      * @param name the pin that needs to be pressed, eg: TouchPin.P0
      * @param body the code to run when the pin is pressed
      */
     //% help=input/on-pin-pressed weight=83 blockGap=32
-    //% blockId=device_pin_event block="on pin %name|pressed" shim=input::onPinPressed
+    //% blockId=device_pin_event block="on pin %name|pressed"
+    //% deprecated=true shim=input::onPinPressed
     function onPinPressed(name: TouchPin, body: () => void): void;
 
     /**
