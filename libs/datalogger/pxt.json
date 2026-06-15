@@ -1,6 +1,7 @@
 {
     "name": "datalogger",
-    "description": "Data logging to flash memory. micro:bit (V2) only.",
+    "description": "Data logging to flash memory. Calliope mini 3 only.",
+    "icon": "./static/packages/datalogger/icon.png",
     "files": [
         "datalogger.ts"
     ],

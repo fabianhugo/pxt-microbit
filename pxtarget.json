@@ -8,6 +8,7 @@
     "bundleddirs": [
         "libs/core",
         "libs/audio-samples",
+        "libs/funk",
         "libs/radio",
         "libs/devices",
         "libs/bluetooth",

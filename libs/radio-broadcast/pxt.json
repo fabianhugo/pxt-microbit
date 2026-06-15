@@ -1,3 +1,6 @@
 {
+    "name": "radio-broadcast",
+    "description": "Adds new blocks for message communication in the radio category",
+    "icon": "./static/packages/radio-broadcast/icon.png",
     "additionalFilePath": "../../node_modules/pxt-common-packages/libs/radio-broadcast"
 }

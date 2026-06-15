@@ -1,6 +1,6 @@
 {
     "name": "bluetooth",
-    "description": "Bluetooth services",
+    "description": "Adds blocks for Bluetooth",
     "files": [
         "README.md",
         "enums.d.ts",
