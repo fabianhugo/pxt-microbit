@@ -558,8 +558,14 @@ namespace pins {
         // Re-assert motor driver state before each tone.
         // MOTOR_SLEEP and MOTOR_IN2 are on different nRF pins from pitchPin (MOTOR_IN1),
         // so setDigitalValue here does NOT disrupt the analog/PWM state of pitchPin.
-        uBit.io.MOTOR_SLEEP.setDigitalValue(1); // keep nSLEEP active
-        uBit.io.MOTOR_IN2.setDigitalValue(1);   // restore IN2 static HIGH
+        // Shared DRV8837: IN2 (M1_DIR) HIGH while IN1 is idle DC-drives the motor output,
+        // so only bias IN2 HIGH when actually sounding (frequency > 0). A rest/stop
+        // (frequency <= 0) leaves IN1=IN2=0 → coast (motor released). nSLEEP stays HIGH:
+        // coast with no PWM/no load draws <=200uA (datasheet), and avoids the ~1ms tWAKE
+        // that an nSLEEP wake would add to every note onset.
+        const bool toning = frequency > 0 && !edgeConnectorSoundDisabled;
+        uBit.io.MOTOR_SLEEP.setDigitalValue(1);          // keep nSLEEP active
+        uBit.io.MOTOR_IN2.setDigitalValue(toning ? 1 : 0); // IN2 HIGH only while sounding
         if (NULL != pitchPin && !edgeConnectorSoundDisabled)
             pinAnalogSetPitch(pitchPin, frequency, ms);
         // clear pitch
@@ -567,6 +573,7 @@ namespace pins {
             fiber_sleep(ms);
             if (NULL != pitchPin && !edgeConnectorSoundDisabled)
                 pitchPin->setAnalogValue(0);
+            uBit.io.MOTOR_IN2.setDigitalValue(0); // release motor after the tone (coast)
             analogTonePlaying = false;
             // causes issues with v2 DMA.
             // fiber_sleep(5);
