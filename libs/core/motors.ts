@@ -49,15 +49,11 @@ namespace motors {
 
 }
 
-// Calliope v1/v2 DAL: route music/tone blocks through the DRV8837 speaker on bootup.
-// DRV8837 truth table for the speaker config:
-//   IN1=0, IN2=1 → Reverse  → OUT1=L, OUT2=H  (current through speaker)
-//   IN1=1, IN2=1 → Brake    → OUT1=L, OUT2=L  (no current)
-// So: IN2 (M1_DIR) = static HIGH reference, IN1 (M0_DIR) = PWM audio signal.
-// OUT1 is always LOW; OUT2 swings with PWM → clean single-ended speaker drive.
-if (hardware._motorDriverType() === 1) {
-    pins.digitalWritePin(DigitalPin.M_MODE, 1)  // nSLEEP HIGH → driver active
-    pins.digitalWritePin(DigitalPin.M1_DIR, 1)  // IN2 = static HIGH (OUT2 reference)
-    pins.setAudioPin(DigitalPin.M0_DIR)          // IN1 = PWM audio → pitchPin = MOTOR_IN1
-}
+// Calliope v1/v2 DAL note: the speaker and motors share one DRV8837. The audio config
+// (nSLEEP HIGH, IN2/M1_DIR static HIGH, IN1/M0_DIR = PWM) must NOT be applied eagerly at
+// boot: with IN2 driven HIGH while the driver is awake, the H-bridge output is energized,
+// which is identical to "M1 at full power" — so M1 would spin even in a program with no
+// blocks. Instead the C++ audio path sets this config lazily on the first tone and
+// re-asserts it before every tone (see analogPitch in pins.cpp). Until audio or a motor
+// block runs, the driver stays asleep (nSLEEP LOW → outputs Hi-Z) and no motor spins.
 
