@@ -39,3 +39,10 @@ svg.blocklySvg,
     */
     box-shadow: 4px 0px 2px -4px rgba(0,0,0,0.12), 4px 0px 2px -4px rgba(0,0,0,0.24);
 }
+
+#filelist, #editortools, #boardview {
+    /* Textured simulator background (matches the original pxt-calliope look). Applied to
+       #boardview in both modes so the texture shows on the side panel, not just fullscreen
+       (the base theme paints #boardview with an opaque gradient that hides #filelist's texture). */
+    background: #fff url("/static/logo_texture.png") 0 0 repeat !important;
+}

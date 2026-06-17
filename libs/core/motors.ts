@@ -55,6 +55,7 @@ namespace motors {
     //% percent.defl=100
     //% weight=75
     //% group="Calliope mini V1/V2"
+    //% trackArgs=0
     export function motorPower(percent: number) {
         // V1/V2 single-motor block. It deliberately does NOT carry parts="motor" and does NOT
         // call dualMotorPower, so the simulator (which models v3) shows no motor for this

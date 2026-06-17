@@ -40,8 +40,11 @@ namespace pxsim {
         // board hardware version
         hardwareVersion = 3;
         // Per-channel motor usage [M0, M1], derived at load from the tracked Motor argument
-        // (motors.dualMotorPower trackArgs=0); drives which motor(s) the simulator displays.
+        // (motors.dualMotorPower trackArgs=0); drives which v3 motor(s) the simulator displays.
         motorUsed: boolean[] = [false, false];
+        // True when the program uses the v1/v2 single-motor block (motors.motorPower, trackArgs=0);
+        // drives the v2 single-motor visualization (the v3 dualMotorPower block does NOT show on v2).
+        singleMotorUsed: boolean = false;
 
         constructor() {
             super()
@@ -149,6 +152,15 @@ namespace pxsim {
             this.samplesState = new samples.SamplesState();
         }
 
+        // Read the simulator board revision chosen via the in-sim v2/v3 toggle. Defaults to v3.
+        static readSimHardwareVersion(): number {
+            try {
+                const v = parseInt(localStorage.getItem("calliope:simHwVersion"));
+                if (v === 2 || v === 3) return v;
+            } catch (e) { }
+            return 3;
+        }
+
         ensureHardwareVersion(version: number) {
             if (version > this.hardwareVersion) {
                 this.hardwareVersion = version;
@@ -159,8 +171,9 @@ namespace pxsim {
 
         initAsync(msg: SimulatorRunMessage): Promise<void> {
             super.initAsync(msg);
-            // Calliope mini v3 simulator: hardware version is fixed (no v1/v2 feature detection).
-            this.hardwareVersion = 3;
+            // Calliope mini simulator revision (v2/v3) is chosen via the in-sim toggle button
+            // and persisted, so a re-run keeps the last-selected board. Defaults to v3.
+            this.hardwareVersion = DalBoard.readSimHardwareVersion();
             const boardDef = msg.boardDefinition;
             const cmpsList = msg.parts;
             const cmpDefs = msg.partDefinitions || {};
@@ -188,6 +201,14 @@ namespace pxsim {
                 || (msg.builtinParts && msg.builtinParts.indexOf("motor") >= 0);
             if (anyMotor && !this.motorUsed[0] && !this.motorUsed[1])
                 this.motorUsed = [true, true];
+
+            // The v1/v2 single-motor block (motors.motorPower, trackArgs=0) is the only thing that
+            // shows a motor on the v2 board. Detect it separately from dualMotorPower: its fnArgs
+            // key contains "motorPower" but not "dualMotorPower".
+            this.singleMotorUsed = false;
+            if (fnArgs)
+                this.singleMotorUsed = Object.keys(fnArgs).some(k =>
+                    k.indexOf("motorPower") >= 0 && k.indexOf("dualMotorPower") < 0);
 
             const opts: visuals.BoardHostOpts = {
                 state: this,

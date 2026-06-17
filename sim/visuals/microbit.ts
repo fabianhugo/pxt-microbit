@@ -753,6 +753,7 @@ namespace pxsim.visuals {
         private motorRotors: SVGElement[];
         private motorGroups: SVGElement[];
         private buttonGroup: SVGGElement;
+        private versionToggle: SVGGElement;
         private pinDragSurfaces: Map<SVGElement> = {};
         private pinNmToCoord: Map<Coord> = {
 			"EXT_PWR": [
@@ -1066,6 +1067,10 @@ namespace pxsim.visuals {
         }
 
         public getCoord(pinNm: string): Coord {
+            // The static map holds Calliope mini v3 positions; when the v2 board is shown, the
+            // GPIO header sits elsewhere, so resolve those pins from the v2 coordinate map.
+            if (this.domHardwareVersion == 2 && pinCoordsV2[pinNm])
+                return pinCoordsV2[pinNm];
             return this.pinNmToCoord[pinNm];
         }
 
@@ -1246,6 +1251,15 @@ namespace pxsim.visuals {
             const ec = state.edgeConnectorState;
             if (!ec) return;
 
+            if (!this.motorRotors) { this.motorRotors = []; this.motorGroups = []; }
+
+            // Calliope mini v1/v2 has a single bidirectional motor on one DRV8837, not the v3 dual
+            // H-bridge, so the v2 board shows one motor wired across M0+ and M0-.
+            if (this.domHardwareVersion == 2) {
+                this.updateSingleMotor(ec, state);
+                return;
+            }
+
             // plus/minus are the M0±/M1± Steckleiste pad centers (rect xy + 7.5), hardcoded so
             // the cables reliably plug into the header (getBBox can return 0 before layout).
             // M0 is on the inner row (y=398.9), M1 on the outer row (y=381.7); both rows share the
@@ -1257,8 +1271,6 @@ namespace pxsim.visuals {
                 { speedPin: DAL.MICROBIT_ID_IO_M_A_IN2, dirPin: DAL.MICROBIT_ID_IO_M_A_IN1, plus: [351, 398.9], minus: [367, 398.9], bodyX: 400, bodyY: 580, label: "M0" },
                 { speedPin: DAL.MICROBIT_ID_IO_M_B_IN2, dirPin: DAL.MICROBIT_ID_IO_M_B_IN1, plus: [355, 381.7], minus: [371, 381.7], bodyX: 475, bodyY: 580, label: "M1" }
             ];
-
-            if (!this.motorRotors) { this.motorRotors = []; this.motorGroups = []; }
 
             MOTORS.forEach((m, i) => {
                 const speedPin = ec.getPin(m.speedPin);
@@ -1287,6 +1299,45 @@ namespace pxsim.visuals {
                     rotor.style.animationDirection = reverse ? "reverse" : "normal";
                 }
             });
+        }
+
+        // Calliope mini v1/v2 single-motor visualization. One bidirectional motor on the shared
+        // DRV8837 is wired across the M0+ pad and the M0- pad (silk-screened M1+). The "motor at
+        // %" block (motors.motorPower -> driveSingleMotorDal) drives M0_DIR for forward and
+        // M1_DIR for reverse, so the active pin gives the speed and which one gives the direction.
+        private updateSingleMotor(ec: pxsim.EdgeConnectorState, state: pxsim.DalBoard) {
+            // Only the v1/v2 single-motor block (motors.motorPower) shows a motor on the v2 board.
+            // The v3 dualMotorPower block deliberately shows nothing here, even though both drive
+            // the same DRV8837 pins at runtime — the distinction is which block the program uses.
+            const show = !!state.singleMotorUsed;
+
+            // M0+ pad and M0- pad (silk M1+) centres in the v2 artwork; body sits below, centred.
+            const M0PLUS = [239.4, 389.3], M0MINUS = [255.8, 391.7];
+            if (show && !this.motorGroups[0])
+                this.buildMotor({ plus: M0PLUS, minus: M0MINUS, bodyX: 247, bodyY: 560, label: "M0" }, 0);
+
+            const g = this.motorGroups[0];
+            const rotor = this.motorRotors[0];
+            if (!g || !rotor) return;
+            g.style.display = show ? "" : "none";
+            if (!show) { rotor.style.animation = ""; return; }
+
+            // driveSingleMotorDal writes the PWM duty to M0_DIR (forward) or M1_DIR (reverse);
+            // the active pin gives the speed, which one is active gives the direction.
+            const fwdPin = ec.getPin(DAL.MICROBIT_ID_IO_M_A_IN1); // M0_DIR: forward PWM
+            const revPin = ec.getPin(DAL.MICROBIT_ID_IO_M_B_IN1); // M1_DIR: reverse PWM
+            const fwd = fwdPin ? Math.abs(fwdPin.value || 0) : 0;
+            const rev = revPin ? Math.abs(revPin.value || 0) : 0;
+            const speed = Math.min(1023, Math.max(fwd, rev));
+            const frac = speed / 1023;
+            const reverse = rev > fwd;
+            if (frac <= 0.001) {
+                rotor.style.animation = "";
+            } else {
+                const dur = (0.2 + (1 - frac) * 1.6).toFixed(2);
+                rotor.style.animation = `sim-motor-spin ${dur}s linear infinite`;
+                rotor.style.animationDirection = reverse ? "reverse" : "normal";
+            }
         }
 
         // Draws one motor: a housing + spinning rotor, with red(+)/black(-) cables plugged
@@ -1423,7 +1474,7 @@ namespace pxsim.visuals {
             // create a control button using foreignObject (same style as A+B)
             // If `split` is true, a two-part control is created: left action + right dropdown
             const makeControlBtn = (left: number, top: number, key: string, id: number, extraHtml: string = "", split: boolean = false, leftKey?: string, rightKey?: string, width: number | string = buttonWidth) => {
-                // gesture key is a dynamic display string; lf() requires a literal, so use it directly
+                // gesture key is a dynamic display string; localization needs a string literal, so use it directly
                 const aria = key;
                 const icon = iconFor(key);
 
@@ -1694,7 +1745,7 @@ namespace pxsim.visuals {
                 let gridItemsHTML = '';
                 visible.forEach((g, idx) => {
                     const icon = iconFor(g.key);
-                    // gesture key is a dynamic display string; lf() requires a literal, so use it directly
+                    // gesture key is a dynamic display string; localization needs a string literal, so use it directly
                     const aria = g.key;
                     gridItemsHTML += `
                         <button class="sim-gesture-dropdown-item" data-gesture-id="${g.id}" data-gesture-key="${g.key}" aria-label="${aria}">
@@ -2266,10 +2317,15 @@ namespace pxsim.visuals {
             //         this.props.disableTilt = val === '1';
             //     }
             // } catch (e) { }
-            // Calliope mini v3 board: parse the static artwork once (board-svg.ts), then wire
+            // Calliope mini board: parse the static artwork once (board-svg.ts), then wire
             // the dynamic layer (LEDs, RGB, buttons, pins, motors) programmatically below.
-            this.domHardwareVersion = 3;
-            const SVG_CODE = BOARD_SVG_HEAD + BOARD_MINI3_BODY + BOARD_SVG_BOTTOM;
+            // v2 and v3 share the same element IDs, so the wiring below is version-agnostic;
+            // only the artwork body and the pin titles differ between revisions.
+            const b: any = this.props && this.props.runtime && this.props.runtime.board;
+            this.domHardwareVersion = (b && b.hardwareVersion == 2) ? 2 : 3;
+            const boardBody = this.domHardwareVersion == 2 ? BOARD_MINI2_BODY : BOARD_MINI3_BODY;
+            const boardPinTitles = this.domHardwareVersion == 2 ? pinTitlesV2 : pinTitles;
+            const SVG_CODE = BOARD_SVG_HEAD + boardBody + BOARD_SVG_BOTTOM;
             this.element = new DOMParser().parseFromString(SVG_CODE, "image/svg+xml").querySelector("svg") as SVGSVGElement;
             svg.hydrate(this.element, {
                 "version": "1.0",
@@ -2350,7 +2406,7 @@ namespace pxsim.visuals {
 				return p;
 			});
 
-            this.pins.forEach((p, i) => svg.hydrate(p, { title: pinTitles[i] }));
+            this.pins.forEach((p, i) => svg.hydrate(p, { title: boardPinTitles[i] }));
 
             // this.pins = pinDrawOrder.reduce((pins, pinName) => {
             //     const simPinIndex = pinNames.indexOf(pinName);
@@ -2403,6 +2459,47 @@ namespace pxsim.visuals {
             (<any>this.buttons[2]).style.visibility = "hidden";
 
             this.buttonGroup = svg.child(this.element, "g") as SVGGElement;
+
+            // Calliope mini revision toggle (v2 <-> v3), rendered inside the simulator.
+            this.buildVersionToggle();
+        }
+
+        // Small in-simulator button (top-right of the board) that switches the rendered
+        // Calliope mini revision between v2 and v3. It shows the current revision and, on
+        // click, persists the choice and rebuilds the board artwork in place.
+        private buildVersionToggle() {
+            const w = 70, h = 32, pad = 14;
+            const x = MB_WIDTH - w - pad, y = pad;
+            const g = svg.child(this.element, "g", { class: "sim-version-toggle" }) as SVGGElement;
+            (g.style as any).cursor = "pointer";
+            const bg = svg.child(g, "rect", {
+                x, y, width: w, height: h, rx: 7, ry: 7,
+                fill: "#044854", stroke: "#ffffff", "stroke-width": 1.5, opacity: 0.92
+            });
+            const label = svg.child(g, "text", {
+                x: x + w / 2, y: y + h / 2,
+                "text-anchor": "middle", "dominant-baseline": "central",
+                fill: "#ffffff", "font-size": 16, "font-weight": "bold",
+                "font-family": "sans-serif", "pointer-events": "none"
+            }) as SVGTextElement;
+            label.textContent = "mini " + (this.domHardwareVersion == 2 ? "v2" : "v3");
+            svg.hydrate(g, { title: pxsim.localization.lf("Switch Calliope mini revision (v2/v3)") });
+            // Swallow pointer events so the board's tilt/accelerometer handlers don't react.
+            pointerEvents.down.forEach(evid => g.addEventListener(evid, (ev: Event) => ev.stopPropagation()));
+            g.addEventListener("click", (ev: Event) => {
+                ev.stopPropagation();
+                this.toggleHardwareVersion();
+            });
+            this.versionToggle = g;
+        }
+
+        // Flip the hardware revision (v2 <-> v3), persist it so the re-init picks it up, and
+        // restart the simulator exactly like the "Restart" toolbar button. initAsync() reads the
+        // persisted revision when the board is re-created, so the whole board is rebuilt cleanly.
+        private toggleHardwareVersion() {
+            const next = this.domHardwareVersion == 2 ? 3 : 2;
+            try { localStorage.setItem("calliope:simHwVersion", "" + next); } catch (e) { }
+            Runtime.postMessage(<pxsim.SimulatorCommandMessage>{ type: "simulator", command: "restart" });
         }
 
         private mkBtn(left: number, top: number, text: string): { outer: SVGElement, inner: SVGElement } {
