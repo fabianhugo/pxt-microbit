@@ -9,12 +9,25 @@
 #define PinCompat MicroBitPin
 #endif
 
-// Calliope-specific pins not defined in Lancaster micro:bit v1 DAL
+// Pin-ID fallbacks. The shared DigitalPin/AnalogPin enums and getPin() reference
+// MICROBIT_ID_IO_P16..P20, but not every variant defines all of them: the v3 codal
+// names these pins A1_RX/A1_TX/A0_SCL/A0_SDA (so MICROBIT_ID_IO_P16/P17/P19/P20 are
+// absent there), and the Lancaster micro:bit v1 DAL lacks P17/P18. Define the numeric
+// IDs (== ID_PIN_Px) so the shared code compiles on every variant.
+#ifndef MICROBIT_ID_IO_P16
+#define MICROBIT_ID_IO_P16 116
+#endif
 #ifndef MICROBIT_ID_IO_P17
 #define MICROBIT_ID_IO_P17 117
 #endif
 #ifndef MICROBIT_ID_IO_P18
 #define MICROBIT_ID_IO_P18 118
+#endif
+#ifndef MICROBIT_ID_IO_P19
+#define MICROBIT_ID_IO_P19 119
+#endif
+#ifndef MICROBIT_ID_IO_P20
+#define MICROBIT_ID_IO_P20 120
 #endif
 #ifndef MICROBIT_ID_IO_RGB
 #define MICROBIT_ID_IO_RGB 151
@@ -45,39 +58,56 @@ enum class DigitalPin {
     //% blockIdentity="pins._digitalPin"
     P3 = MICROBIT_ID_IO_P3,
     //% blockIdentity="pins._digitalPin"
+    //% block="C4"
     P4 = MICROBIT_ID_IO_P4,
     //% blockIdentity="pins._digitalPin"
+    //% block="C5"
     P5 = MICROBIT_ID_IO_P5,
     //% blockIdentity="pins._digitalPin"
+    //% block="C6"
     P6 = MICROBIT_ID_IO_P6,
     //% blockIdentity="pins._digitalPin"
+    //% block="C7"
     P7 = MICROBIT_ID_IO_P7,
     //% blockIdentity="pins._digitalPin"
+    //% block="C8"
     P8 = MICROBIT_ID_IO_P8,
     //% blockIdentity="pins._digitalPin"
+    //% block="C9"
     P9 = MICROBIT_ID_IO_P9,
     //% blockIdentity="pins._digitalPin"
+    //% block="C10"
     P10 = MICROBIT_ID_IO_P10,
     //% blockIdentity="pins._digitalPin"
+    //% block="C11"
     P11 = MICROBIT_ID_IO_P11,
     //% blockIdentity="pins._digitalPin"
+    //% block="C12"
     P12 = MICROBIT_ID_IO_P12,
     //% blockIdentity="pins._digitalPin"
+    //% block="C13"
     P13 = MICROBIT_ID_IO_P13,
     //% blockIdentity="pins._digitalPin"
+    //% block="C14"
     P14 = MICROBIT_ID_IO_P14,
     //% blockIdentity="pins._digitalPin"
+    //% block="C15"
     P15 = MICROBIT_ID_IO_P15,
     //% blockIdentity="pins._digitalPin"
+    //% block="C16 (A1 RX)"
     P16 = MICROBIT_ID_IO_P16,
     //% blockIdentity="pins._digitalPin"
+    //% block="C17 (A1 TX)"
     P17 = MICROBIT_ID_IO_P17,
     //% blockIdentity="pins._digitalPin"
+    //% block="C18"
     P18 = MICROBIT_ID_IO_P18,
     //% blockIdentity="pins._digitalPin"
+    //% block="C19 (A0_SCL)"
     //% blockHidden=1
     P19 = MICROBIT_ID_IO_P19,
     //% blockIdentity="pins._digitalPin"
+    //% block="C20 (A0_SDA)"
     //% blockHidden=1
     P20 = MICROBIT_ID_IO_P20,
     //% blockIdentity="pins._digitalPin"
@@ -96,7 +126,6 @@ enum class DigitalPin {
     //% blockHidden=1
     M1_SPEED = MICROBIT_ID_IO_M_B_IN2,
     //% blockIdentity="pins._digitalPin"
-    //% blockHidden=1
     RGB = MICROBIT_ID_IO_RGB,
 };
 
@@ -110,39 +139,56 @@ enum class AnalogPin {
     //% blockIdentity="pins._analogPin"
     P3 = MICROBIT_ID_IO_P3,
     //% blockIdentity="pins._analogPin"
+    //% block="C4"
     P4 = MICROBIT_ID_IO_P4,
     //% blockIdentity="pins._analogPin"
+    //% block="C5"
     P5 = MICROBIT_ID_IO_P5,
     //% blockIdentity="pins._analogPin"
+    //% block="C6"
     P6 = MICROBIT_ID_IO_P6,
     //% blockIdentity="pins._analogPin"
+    //% block="C7"
     P7 = MICROBIT_ID_IO_P7,
     //% blockIdentity="pins._analogPin"
+    //% block="C8"
     P8 = MICROBIT_ID_IO_P8,
     //% blockIdentity="pins._analogPin"
+    //% block="C9"
     P9 = MICROBIT_ID_IO_P9,
     //% blockIdentity="pins._analogPin"
+    //% block="C10"
     P10 = MICROBIT_ID_IO_P10,
     //% blockIdentity="pins._analogPin"
+    //% block="C11"
     P11 = MICROBIT_ID_IO_P11,
     //% blockIdentity="pins._analogPin"
+    //% block="C12"
     P12 = MICROBIT_ID_IO_P12,
     //% blockIdentity="pins._analogPin"
+    //% block="C13"
     P13 = MICROBIT_ID_IO_P13,
     //% blockIdentity="pins._analogPin"
+    //% block="C14"
     P14 = MICROBIT_ID_IO_P14,
     //% blockIdentity="pins._analogPin"
+    //% block="C15"
     P15 = MICROBIT_ID_IO_P15,
     //% blockIdentity="pins._analogPin"
+    //% block="C16 (A1 RX)"
     P16 = MICROBIT_ID_IO_P16,
     //% blockIdentity="pins._analogPin"
+    //% block="C17 (A1 TX)"
     P17 = MICROBIT_ID_IO_P17,
     //% blockIdentity="pins._analogPin"
+    //% block="C18"
     P18 = MICROBIT_ID_IO_P18,
     //% blockIdentity="pins._analogPin"
+    //% block="C19 (A0_SCL)"
     //% blockHidden=1
     P19 = MICROBIT_ID_IO_P19,
     //% blockIdentity="pins._analogPin"
+    //% block="C20 (A0_SDA)"
     //% blockHidden=1
     P20 = MICROBIT_ID_IO_P20,
     //% blockIdentity="pins._analogPin"
@@ -210,13 +256,38 @@ MicroBitPin *getPin(int id) {
         case MICROBIT_ID_IO_P13: return &uBit.io.P13;
         case MICROBIT_ID_IO_P14: return &uBit.io.P14;
         case MICROBIT_ID_IO_P15: return &uBit.io.P15;
-        case MICROBIT_ID_IO_P16: return &uBit.io.P16;
-#if MICROBIT_CODAL
-        case MICROBIT_ID_IO_P17: return &uBit.io.P17;
-        case MICROBIT_ID_IO_P18: return &uBit.io.P18;
+        // P16/P17/P19/P20 IO-member names differ by codal version: the Calliope pin-update
+        // codal renames them to A1RX/A1TX/A0SCL/A0SDA AND defines MICROBIT_ID_IO_A1_RX,
+        // while older codal and the v1/v2 DAL keep P16/P17/P19/P20. Key off the
+        // MICROBIT_ID_IO_A1_RX define (NOT MICROBIT_CODAL — both codal versions set that).
+        // Same pin IDs (116/117/119/120) on all variants.
+        case MICROBIT_ID_IO_P16:
+#ifdef MICROBIT_ID_IO_A1_RX
+            return &uBit.io.A1RX;
+#else
+            return &uBit.io.P16;
 #endif
-        case MICROBIT_ID_IO_P19: return &uBit.io.P19;
-        case MICROBIT_ID_IO_P20: return &uBit.io.P20;
+        case MICROBIT_ID_IO_P17:
+#ifdef MICROBIT_ID_IO_A1_RX
+            return &uBit.io.A1TX;
+#else
+            return &uBit.io.P17;
+#endif
+#if MICROBIT_CODAL
+        case MICROBIT_ID_IO_P18: return &uBit.io.P18; // both codal versions have P18; v1/v2 DAL has none
+#endif
+        case MICROBIT_ID_IO_P19:
+#ifdef MICROBIT_ID_IO_A1_RX
+            return &uBit.io.A0SCL;
+#else
+            return &uBit.io.P19;
+#endif
+        case MICROBIT_ID_IO_P20:
+#ifdef MICROBIT_ID_IO_A1_RX
+            return &uBit.io.A0SDA;
+#else
+            return &uBit.io.P20;
+#endif
 #ifdef MICROBIT_PIN_RGB
         case MICROBIT_ID_IO_RGB: return &uBit.io.RGB; // All Calliope variants (v1/v2 DAL, v3 codal)
 #endif

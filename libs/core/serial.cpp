@@ -1,5 +1,11 @@
 #include "pxt.h"
 
+// Pin-ID fallback: the Calliope v3 codal names P16 as A1_RX and does not define
+// MICROBIT_ID_IO_P16. Define it so the SerialPin enum compiles on every variant.
+#ifndef MICROBIT_ID_IO_P16
+#define MICROBIT_ID_IO_P16 116
+#endif
+
 #define MICROBIT_SERIAL_READ_BUFFER_LENGTH 64
 
 // make sure USB_TX and USB_RX don't overlap with other pin ids

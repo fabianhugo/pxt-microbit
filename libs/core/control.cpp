@@ -1,5 +1,18 @@
 #include "pxt.h"
 
+// Pin-ID fallbacks: the Calliope v3 codal names P16/P19/P20 as A1_RX/A0_SCL/A0_SDA and does
+// not define MICROBIT_ID_IO_P16/P19/P20. Define the numeric IDs (== ID_PIN_Px) so the
+// EventBusSource enum compiles on every variant (no-op where codal/DAL already defines them).
+#ifndef MICROBIT_ID_IO_P16
+#define MICROBIT_ID_IO_P16 116
+#endif
+#ifndef MICROBIT_ID_IO_P19
+#define MICROBIT_ID_IO_P19 119
+#endif
+#ifndef MICROBIT_ID_IO_P20
+#define MICROBIT_ID_IO_P20 120
+#endif
+
 extern uint32_t __StackTop;
 
 /**

@@ -75,7 +75,6 @@
         "playable.ts"
     ],
     "testFiles": [],
-    "public": true,
     "dependencies": {},
     "dalDTS": {
         "corePackage": ".",
