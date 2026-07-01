@@ -110,7 +110,7 @@ class DAPWrapper implements pxt.packetio.PacketIOWrapper {
         this.allocDAP();
     }
 
-    icon = "xicon microbit";
+    icon = "icon usb";
 
     private pendingSerial: Uint8Array
     private lastPendingSerial: number
@@ -994,7 +994,7 @@ function jlinkBuildProbeInfoCmd(sub: number, data?: Uint8Array): Uint8Array {
  * unavailable there (flashing still works on all platforms).
  */
 class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
-    icon = "xicon microbit";
+    icon = "icon usb";
     familyID = 0x9902;   // synthetic ID for Calliope v2
     onSerial: (buf: Uint8Array, isStderr: boolean) => void = () => {};
     onCustomEvent: (type: string, payload: Uint8Array) => void = () => {};
@@ -1185,7 +1185,7 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
  */
 class CalliopeWrapper implements pxt.packetio.PacketIOWrapper {
     readonly io: pxt.packetio.PacketIO;
-    icon     = "xicon microbit";
+    icon     = "icon usb";
     familyID = 0x0D28;
     onSerial:      (buf: Uint8Array, isStderr: boolean) => void = () => {};
     onCustomEvent: (type: string, payload: Uint8Array) => void  = () => {};
