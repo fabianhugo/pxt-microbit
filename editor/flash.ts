@@ -40,6 +40,12 @@ function log(msg: string) {
     pxt.debug(`dap ${ts}: ${msg}`)
 }
 const logV = /webusbdbg=1/.test(window.location.href) ? log : (msg: string) => { }
+// visible logger for serial diagnostics: pxt.debug (used by log()) is gated off
+// in production, so route serial troubleshooting straight to the console when
+// ?webusbdbg=1 is present.
+const logSerial = /webusbdbg=1/.test(window.location.href)
+    ? (msg: string) => console.log(`jlink serial: ${msg}`)
+    : (msg: string) => { }
 const setBaudRateOnConnection = !/webusbbaud=0/.test(window.location.href)
 const resetOnConnection = !/webusbreset=0/.test(window.location.href)
 
@@ -989,9 +995,15 @@ function jlinkBuildProbeInfoCmd(sub: number, data?: Uint8Array): Uint8Array {
  * to the probe; it handles erase, program, verify and reset internally.
  * No partial-flashing support; every download is a full flash.
  *
- * Serial (CDC) works on Windows/macOS.  On Linux the kernel's cdc_acm
- * driver claims the CDC interfaces before WebUSB can, so serial is
- * unavailable there (flashing still works on all platforms).
+ * Serial: the nRF UART is bridged by the J-Link OB to a standard USB
+ * CDC-ACM Virtual COM Port, a separate USB function from the vendor
+ * interface used for flashing.  We read it through the Web Serial API
+ * (navigator.serial) rather than WebUSB, because the OS serial driver
+ * (cdc_acm on Linux, usbser.sys on Windows) owns the CDC interfaces and
+ * WebUSB cannot claim them.  Web Serial layers on top of that driver, so
+ * it works cross-platform.  Requires a Chromium browser; on browsers
+ * without navigator.serial the serial monitor is silently unavailable
+ * (flashing still works everywhere).
  */
 class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
     icon = "icon usb";
@@ -1006,6 +1018,11 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
     private jlinkOutEP  = 2;
     private disconnectListener: (ev: pxt.usb.USBConnectionEvent) => void = null;
     private connectListener:    (ev: pxt.usb.USBConnectionEvent) => void = null;
+
+    // Web Serial state for the CDC Virtual COM Port (target UART bridge)
+    private serialPort:   any /* SerialPort */ = null;
+    private serialReader: any /* ReadableStreamDefaultReader<Uint8Array> */ = null;
+    private serialGen     = 0; // bumped on stop to cancel the read loop
 
     constructor(
         public readonly io: pxt.packetio.PacketIO,
@@ -1068,6 +1085,7 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
                 log("jlink: device disconnected");
                 this.initialized = false;
                 this.connecting  = false;
+                this.stopSerial();
                 this.removeDisconnectListener();
                 this.io.onConnectionChanged();
 
@@ -1092,6 +1110,10 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
             this.initialized = true;
             this.connecting  = false;
             this.io.onConnectionChanged();
+
+            // start serial reader (best-effort; failure must not break flashing)
+            this.startSerialAsync()
+                .catch(e => log(`jlink serial: start failed: ${(e as Error).message}`));
         } catch (e) {
             log(`jlink: reconnect error: ${(e as Error).message}`);
             this.initialized = false;
@@ -1107,6 +1129,7 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
         log("jlink: disconnect");
         this.initialized = false;
         this.connecting  = false;
+        this.stopSerial();
         this.removeDisconnectListener();
         this.removeConnectListener();
         if (this.device.opened) {
@@ -1169,6 +1192,123 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
         return ["logotouch", "builtinspeaker", "microphone", "flashlog", "v2"];
     }
 
+    /**
+     * Open the J-Link Virtual COM Port via the Web Serial API and pump
+     * incoming bytes into onSerial.  Best-effort: any failure (no Web Serial
+     * support, permission denied, no matching port) is logged and swallowed
+     * so that flashing keeps working.
+     */
+    private async startSerialAsync(): Promise<void> {
+        const nav: any = navigator;
+        if (!nav.serial) {
+            logSerial("Web Serial API unavailable in this browser");
+            return;
+        }
+
+        // Ideally we'd match the granted port by the SEGGER USB IDs (0x1366),
+        // but Chrome derives SerialPortInfo from the OS and on some platforms
+        // (observed on Linux/Pop!_OS) returns no usbVendorId at all for the
+        // CDC-ACM port — which also makes a filtered requestPort() picker come
+        // up empty.  So: prefer a VID match, but fall back to the sole granted
+        // port, and prompt with NO filter so the device actually shows up.
+        const infoOf = (p: any) => { try { return p.getInfo?.() || {}; } catch (e) { return {}; } };
+
+        // reuse an already-granted port if we can identify one
+        let port: any = null;
+        try {
+            const ports: any[] = await nav.serial.getPorts();
+            port = ports.find(p => infoOf(p).usbVendorId === JLINK_VID)
+                ?? (ports.length === 1 ? ports[0] : null);
+            if (port) logSerial("reusing granted port");
+        } catch (e) {
+            logSerial(`getPorts failed: ${(e as Error).message}`);
+        }
+        // otherwise prompt the user to pick it.
+        // requestPort() needs transient user activation; auto-reconnects after
+        // flashing don't have it, so only prompt when activation is available.
+        // The grant is persistent, so once accepted getPorts() finds it forever.
+        if (!port) {
+            const activation = nav.userActivation;
+            if (activation && !activation.isActive) {
+                logSerial("no granted port and no user activation; " +
+                    "reconnect the device to grant serial access");
+                return;
+            }
+            try {
+                // No filter: a VID/PID filter yields an empty chooser when Chrome
+                // reports no usbVendorId for the CDC port (see note above).
+                port = await nav.serial.requestPort();
+                logSerial("port picked");
+            } catch (e) {
+                // user dismissed the picker or no matching port
+                logSerial(`no port selected: ${(e as Error).message}`);
+                return;
+            }
+        }
+
+        const gen = ++this.serialGen;
+        try {
+            await port.open({ baudRate: 115200 });
+        } catch (e) {
+            // e.g. "Failed to open serial port" when another process (minicom,
+            // screen, ModemManager, cat) already holds /dev/ttyACM0.
+            logSerial(`open failed: ${(e as Error).message}`);
+            return;
+        }
+        // a stop() may have happened while we were opening
+        if (gen !== this.serialGen || !this.initialized) {
+            try { await port.close(); } catch (e) { }
+            return;
+        }
+        this.serialPort = port;
+        logSerial("port open @115200");
+
+        this.readSerialLoop(gen);
+    }
+
+    private async readSerialLoop(gen: number): Promise<void> {
+        const reader = this.serialPort.readable?.getReader();
+        if (!reader) { logSerial("no readable stream on port"); return; }
+        this.serialReader = reader;
+        try {
+            while (gen === this.serialGen && this.initialized) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                if (value && value.length) {
+                    try {
+                        this.onSerial(new Uint8Array(value.buffer, value.byteOffset, value.byteLength), false);
+                    } catch (err) {
+                        logSerial(`decode error: ${(err as Error).message}`);
+                    }
+                }
+            }
+        } catch (e) {
+            if (gen === this.serialGen)
+                logSerial(`read error: ${(e as Error).message}`);
+        } finally {
+            try { reader.releaseLock(); } catch (e) { }
+            if (this.serialReader === reader) this.serialReader = null;
+        }
+    }
+
+    /** Cancel the read loop and close the serial port (best-effort, sync-safe). */
+    private stopSerial(): void {
+        this.serialGen++; // signal the loop to exit
+        const reader = this.serialReader;
+        this.serialReader = null;
+        const port = this.serialPort;
+        this.serialPort = null;
+        if (reader) {
+            try { reader.cancel(); } catch (e) { }
+        }
+        if (port) {
+            // close after the reader has released its lock
+            Promise.resolve()
+                .then(() => port.close())
+                .catch((e: Error) => logSerial(`close failed: ${e.message}`));
+        }
+    }
+
     private async sendCmd(cmd: Uint8Array, expectResp = true): Promise<Uint8Array> {
         await this.device.transferOut(this.jlinkOutEP, cmd);
         if (!expectResp) return new Uint8Array(0);
@@ -1187,11 +1327,25 @@ class CalliopeWrapper implements pxt.packetio.PacketIOWrapper {
     readonly io: pxt.packetio.PacketIO;
     icon     = "icon usb";
     familyID = 0x0D28;
-    onSerial:      (buf: Uint8Array, isStderr: boolean) => void = () => {};
-    onCustomEvent: (type: string, payload: Uint8Array) => void  = () => {};
 
     private dap:   DAPWrapper;
     private jlink: JLinkPacketIOWrapper | null = null;
+
+    // Store handlers locally and forward to the active child, so handlers set
+    // after connect (e.g. via packetio.configureEvents) still reach it.
+    private _onSerial:      (buf: Uint8Array, isStderr: boolean) => void = () => {};
+    private _onCustomEvent: (type: string, payload: Uint8Array) => void  = () => {};
+
+    get onSerial() { return this._onSerial; }
+    set onSerial(v: (buf: Uint8Array, isStderr: boolean) => void) {
+        this._onSerial = v;
+        if (this._active) this._active.onSerial = v;
+    }
+    get onCustomEvent() { return this._onCustomEvent; }
+    set onCustomEvent(v: (type: string, payload: Uint8Array) => void) {
+        this._onCustomEvent = v;
+        if (this._active) this._active.onCustomEvent = v;
+    }
 
     private get _active(): DAPWrapper | JLinkPacketIOWrapper {
         return this.jlink ?? this.dap;
@@ -1218,14 +1372,14 @@ class CalliopeWrapper implements pxt.packetio.PacketIOWrapper {
             if (this.jlink?.isConnecting()) return;
             if (!this.jlink)
                 this.jlink = new JLinkPacketIOWrapper(this.io, jlinkDev);
-            this.jlink.onSerial      = this.onSerial;
-            this.jlink.onCustomEvent = this.onCustomEvent;
+            this.jlink.onSerial      = this._onSerial;
+            this.jlink.onCustomEvent = this._onCustomEvent;
             this.familyID            = this.jlink.familyID;
             return this.jlink.reconnectAsync();
         }
         this.jlink               = null;
-        this.dap.onSerial        = this.onSerial;
-        this.dap.onCustomEvent   = this.onCustomEvent;
+        this.dap.onSerial        = this._onSerial;
+        this.dap.onCustomEvent   = this._onCustomEvent;
         this.familyID            = this.dap.familyID;
         return this.dap.reconnectAsync();
     }
