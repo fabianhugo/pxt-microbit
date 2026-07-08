@@ -96,6 +96,9 @@ namespace pxsim {
                 servos: {
                     // All GPIO pins can drive a servo; a servo on a pin missing from this map
                     // resolves to an undefined pin and crashes MicroServoView.updateState().
+                    // Keys are enum MEMBER names (pxsim.readPin returns the part after the
+                    // dot), so every DigitalPin/AnalogPin alias needs its own entry: the
+                    // P names, the C names (C4=P4 …), and the serial/I2C A-names.
                     "P0": DAL.MICROBIT_ID_IO_P0,
                     "P1": DAL.MICROBIT_ID_IO_P1,
                     "P2": DAL.MICROBIT_ID_IO_P2,
@@ -116,7 +119,28 @@ namespace pxsim {
                     "P17": DAL.MICROBIT_ID_IO_P17,
                     "P18": DAL.MICROBIT_ID_IO_P18,
                     "P19": DAL.MICROBIT_ID_IO_P19,
-                    "P20": DAL.MICROBIT_ID_IO_P20
+                    "P20": DAL.MICROBIT_ID_IO_P20,
+                    "C4": DAL.MICROBIT_ID_IO_P4,
+                    "C5": DAL.MICROBIT_ID_IO_P5,
+                    "C6": DAL.MICROBIT_ID_IO_P6,
+                    "C7": DAL.MICROBIT_ID_IO_P7,
+                    "C8": DAL.MICROBIT_ID_IO_P8,
+                    "C9": DAL.MICROBIT_ID_IO_P9,
+                    "C10": DAL.MICROBIT_ID_IO_P10,
+                    "C11": DAL.MICROBIT_ID_IO_P11,
+                    "C12": DAL.MICROBIT_ID_IO_P12,
+                    "C13": DAL.MICROBIT_ID_IO_P13,
+                    "C14": DAL.MICROBIT_ID_IO_P14,
+                    "C15": DAL.MICROBIT_ID_IO_P15,
+                    "C16": DAL.MICROBIT_ID_IO_P16,
+                    "C17": DAL.MICROBIT_ID_IO_P17,
+                    "C18": DAL.MICROBIT_ID_IO_P18,
+                    "C19": DAL.MICROBIT_ID_IO_P19,
+                    "C20": DAL.MICROBIT_ID_IO_P20,
+                    "A1_RX": DAL.MICROBIT_ID_IO_P16,
+                    "A1_TX": DAL.MICROBIT_ID_IO_P17,
+                    "A0_SCL": DAL.MICROBIT_ID_IO_P19,
+                    "A0_SDA": DAL.MICROBIT_ID_IO_P20
                 }
             });
             this.builtinParts["radio"] = this.radioState = new RadioState(runtime, this, {
