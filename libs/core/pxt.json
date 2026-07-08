@@ -28,6 +28,7 @@
         "basic.ts",
         "icons.ts",
         "icons.jres",
+        "compass.ts",
         "input.cpp",
         "input.ts",
         "gestures.jres",
@@ -72,7 +73,9 @@
         "soundexpressions.cpp",
         "parts/speaker.svg",
         "parts/headphone.svg",
-        "playable.ts"
+        "playable.ts",
+        "_locales/de/core-jsdoc-strings.json",
+        "_locales/de/core-strings.json"
     ],
     "testFiles": [],
     "dependencies": {},

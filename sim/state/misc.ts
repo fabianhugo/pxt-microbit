@@ -203,8 +203,11 @@ namespace pxsim.bluetooth {
 namespace pxsim.light {
 
     // Decode a GRB buffer and update the board's rgbLed state fields.
-    // The buffer was filled with 20%-brightness values by rgbled.ts; scale back up
-    // to full brightness so the visual shows the original color (matching original calliope sim).
+    // Tightly coupled to the producer, libs/core/rgbled.ts: it prescales every
+    // channel to _rgbBrightnessPercent (20%) of the requested color, and this
+    // decode reverses exactly that factor (* 100 / 20) — keep the two in sync.
+    // Other producers writing raw full-brightness WS2812 data to pin 151 (e.g.
+    // the neopixel extension) will therefore render saturated/over-bright here.
     function updateRgbLedState(data: Uint8Array) {
         const b = board() as DalBoard;
         if (!b) return;

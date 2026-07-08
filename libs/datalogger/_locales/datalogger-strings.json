@@ -13,5 +13,5 @@
   "datalogger.setColumns|block": "set columns $cols",
   "datalogger|block": "Data Logger",
   "{id:category}Datalogger": "Datalogger",
-  "{id:group}micro:bit (V2)": "micro:bit (V2)"
+  "{id:group}Calliope mini V3": "Calliope mini V3"
 }

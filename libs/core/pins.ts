@@ -3,7 +3,7 @@
  */
 //% color=#A80000 weight=30 icon="\uf140"
 //% advanced=true
-//% groups='["Pins", "Pulse", "I2C", "SPI", "micro:bit (V2)"]'
+//% groups='["Pins", "Pulse", "I2C", "SPI", "Calliope mini V3"]'
 namespace pins {
     /**
      * Returns the value of a C++ runtime constant

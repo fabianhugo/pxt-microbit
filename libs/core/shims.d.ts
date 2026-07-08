@@ -127,9 +127,9 @@ declare interface Image {
 
 
     /**
-     * Provides access to basic micro:bit functionality.
+     * Provides access to basic Calliope mini functionality.
      */
-    //% color=#1E90FF weight=116 icon="\uf00a"
+
 declare namespace basic {
 
     /**
@@ -138,33 +138,39 @@ declare namespace basic {
      * @param interval time in milliseconds to pause after drawing.
      */
     //% help=basic/show-leds
-    //% weight=95 blockGap=8
+    //% weight=85 blockGap=8
     //% imageLiteral=1 async
     //% blockId=device_show_leds
     //% block="show leds" icon="\uf00a"
-    //% parts="ledmatrix" interval.defl=400 shim=basic::showLeds
+    //% parts="ledmatrix"
+    //% group="LED matrix" interval.defl=400 shim=basic::showLeds
     function showLeds(leds: string, interval?: int32): void;
 
     /**
      * Display text on the display, one character at a time. If the string fits on the screen (i.e. is one letter), does not scroll.
-     * @param text the text to scroll on the screen, eg: "Hello!"
+     * @param text the text to scroll on the screen, eg: "Hi!"
      * @param interval how fast to shift characters; eg: 150, 100, 200, -100
      */
     //% help=basic/show-string
-    //% weight=87 blockGap=16
-    //% block="show|string %text"
+    //% weight=100 blockGap=16
+    //% block="show|string %text || in an interval of %interval ms"
     //% async
     //% blockId=device_print_message
     //% parts="ledmatrix"
-    //% text.shadowOptions.toString=true interval.defl=150 shim=basic::showString
+    //% text.shadowOptions.toString=true
+    //% expandableArgumentMode="toggle"
+    //%
+    //% group="LED matrix" interval.defl=150 shim=basic::showString
     function showString(text: string, interval?: int32): void;
 
     /**
      * Turn off all LEDs
      */
-    //% help=basic/clear-screen weight=79
+    //% help=basic/clear-screen weight=75
     //% blockId=device_clear_display block="clear screen"
-    //% parts="ledmatrix" shim=basic::clearScreen
+    //% parts="ledmatrix"
+    //% group="LED matrix"
+    //% advanced=true shim=basic::clearScreen
     function clearScreen(): void;
 
     /**
@@ -172,8 +178,9 @@ declare namespace basic {
      * @param leds pattern of LEDs to turn on/off
      * @param interval time in milliseconds between each redraw.
      */
-    //% help=basic/show-animation imageLiteral=1 async
-    //% parts="ledmatrix" interval.defl=400 shim=basic::showAnimation
+    //% help=basic/show-animation weight=83 imageLiteral=1 async
+    //% parts="ledmatrix"
+    //% group="LED matrix" interval.defl=400 shim=basic::showAnimation
     function showAnimation(leds: string, interval?: int32): void;
 
     /**
@@ -181,7 +188,8 @@ declare namespace basic {
      * @param leds pattern of LEDs to turn on/off
      */
     //% help=basic/plot-leds weight=80
-    //% parts="ledmatrix" imageLiteral=1 shim=basic::plotLeds
+    //% parts="ledmatrix"
+    //% group="LED matrix" imageLiteral=1 shim=basic::plotLeds
     function plotLeds(leds: string): void;
 
     /**
@@ -189,17 +197,19 @@ declare namespace basic {
      * @param body code to execute
      */
     //% help=basic/forever weight=55 blockGap=16 blockAllowMultiple=1 afterOnStart=true
-    //% blockId=device_forever block="forever" icon="\uf01e" shim=basic::forever
+    //% blockId=device_forever block="forever" icon="\uf01e"
+    //% group="Control" shim=basic::forever
     function forever(a: () => void): void;
 
     /**
      * Pause for the specified time in milliseconds
      * @param ms how long to pause for, eg: 100, 200, 500, 1000, 2000
      */
-    //% help=basic/pause weight=54
+    //% help=basic/pause weight=50
     //% async block="pause (ms) %pause" blockGap=16
     //% blockId=device_pause icon="\uf110"
-    //% pause.shadow=timePicker shim=basic::pause
+    //% pause.shadow=timePicker
+    //% group="Control" shim=basic::pause
     function pause(ms: int32): void;
 }
 
@@ -229,7 +239,8 @@ declare namespace input {
     //% help=input/on-button-pressed weight=85 blockGap=16
     //% blockId=device_button_event block="on button|%NAME|pressed"
     //% parts="buttonpair"
-    //% deprecated=true shim=input::onButtonPressed
+    //% deprecated=true
+    //% group="Events" shim=input::onButtonPressed
     function onButtonPressed(button: Button, body: () => void): void;
 
     /**
@@ -240,7 +251,8 @@ declare namespace input {
     //% help=input/on-gesture weight=84 blockGap=16
     //% blockId=device_gesture_event block="on |%NAME"
     //% parts="accelerometer"
-    //% NAME.fieldEditor="gestures" NAME.fieldOptions.columns=4 shim=input::onGesture
+    //% NAME.fieldEditor="gestures" NAME.fieldOptions.columns=4
+    //% group="Events" shim=input::onGesture
     function onGesture(gesture: Gesture, body: () => void): void;
 
     /**
@@ -250,7 +262,8 @@ declare namespace input {
     //% help=input/is-gesture weight=10 blockGap=8
     //% blockId=deviceisgesture block="is %gesture gesture"
     //% parts="accelerometer"
-    //% gesture.fieldEditor="gestures" gesture.fieldOptions.columns=4 shim=input::isGesture
+    //% gesture.fieldEditor="gestures" gesture.fieldOptions.columns=4
+    //% group="States" shim=input::isGesture
     function isGesture(gesture: Gesture): boolean;
 
     /**
@@ -272,7 +285,8 @@ declare namespace input {
      */
     //% help=input/on-pin-pressed weight=83 blockGap=32
     //% blockId=device_pin_event block="on pin %name|pressed"
-    //% deprecated=true shim=input::onPinPressed
+    //% deprecated=true
+    //% group="Events" shim=input::onPinPressed
     function onPinPressed(name: TouchPin, body: () => void): void;
 
     /**
@@ -282,7 +296,9 @@ declare namespace input {
      */
     //% help=input/on-pin-released weight=6 blockGap=16
     //% blockId=device_pin_released block="on pin %NAME|released"
-    //% advanced=true shim=input::onPinReleased
+    //% advanced=true
+    //% group="Events"
+    //% deprecated=true shim=input::onPinReleased
     function onPinReleased(name: TouchPin, body: () => void): void;
 
     /**
@@ -293,7 +309,8 @@ declare namespace input {
     //% block="button|%NAME|is pressed"
     //% blockId=device_get_button2
     //% icon="\uf192" blockGap=8
-    //% parts="buttonpair" shim=input::buttonIsPressed
+    //% parts="buttonpair"
+    //% group="States" shim=input::buttonIsPressed
     function buttonIsPressed(button: Button): boolean;
 
     /**
@@ -302,7 +319,8 @@ declare namespace input {
      */
     //% help=input/pin-is-pressed weight=58
     //% blockId="device_pin_is_pressed" block="pin %NAME|is pressed"
-    //% blockGap=8 shim=input::pinIsPressed
+    //% blockGap=8
+    //% group="States" shim=input::pinIsPressed
     function pinIsPressed(name: TouchPin): boolean;
 
     /**
@@ -311,7 +329,8 @@ declare namespace input {
      */
     //% help=input/acceleration weight=58
     //% blockId=device_acceleration block="acceleration (mg)|%NAME" blockGap=8
-    //% parts="accelerometer" shim=input::acceleration
+    //% parts="accelerometer"
+    //% group="Sensors" shim=input::acceleration
     function acceleration(dimension: Dimension): int32;
 
     /**
@@ -319,7 +338,8 @@ declare namespace input {
      */
     //% help=input/light-level weight=57
     //% blockId=device_get_light_level block="light level" blockGap=8
-    //% parts="ledmatrix" shim=input::lightLevel
+    //% parts="ledmatrix"
+    //% group="Sensors" shim=input::lightLevel
     function lightLevel(): int32;
 
     /**
@@ -328,7 +348,8 @@ declare namespace input {
     //% help=input/compass-heading
     //% weight=56
     //% blockId=device_heading block="compass heading (°)" blockGap=8
-    //% parts="compass" shim=input::compassHeading
+    //% parts="compass"
+    //% group="Sensors" shim=input::compassHeading
     function compassHeading(): int32;
 
     /**
@@ -337,7 +358,8 @@ declare namespace input {
     //% weight=55
     //% help=input/temperature
     //% blockId=device_temperature block="temperature (°C)" blockGap=8
-    //% parts="thermometer" shim=input::temperature
+    //% parts="thermometer"
+    //% group="Sensors" shim=input::temperature
     function temperature(): int32;
 
     /**
@@ -346,7 +368,8 @@ declare namespace input {
      */
     //% help=input/rotation weight=52
     //% blockId=device_get_rotation block="rotation (°)|%NAME" blockGap=8
-    //% parts="accelerometer" advanced=true shim=input::rotation
+    //% parts="accelerometer" advanced=true
+    //% group="Sensors" shim=input::rotation
     function rotation(kind: Rotation): int32;
 
     /**
@@ -356,7 +379,8 @@ declare namespace input {
     //% help=input/magnetic-force weight=54
     //% blockId=device_get_magnetic_force block="magnetic force (µT)|%NAME" blockGap=8
     //% parts="compass"
-    //% advanced=true shim=input::magneticForce
+    //% advanced=true
+    //% group="Sensors" shim=input::magneticForce
     function magneticForce(dimension: Dimension): number;
 
     /**
@@ -364,7 +388,8 @@ declare namespace input {
      */
     //% help=input/calibrate-compass advanced=true
     //% blockId="input_compass_calibrate" block="calibrate compass"
-    //% weight=55 shim=input::calibrateCompass
+    //% weight=55
+    //% group="Configuration" shim=input::calibrateCompass
     function calibrateCompass(): void;
 
     /**
@@ -375,7 +400,8 @@ declare namespace input {
     //% blockId=device_set_accelerometer_range block="set accelerometer|range %range"
     //% weight=5
     //% parts="accelerometer"
-    //% advanced=true shim=input::setAccelerometerRange
+    //% advanced=true
+    //% group="Configuration" shim=input::setAccelerometerRange
     function setAccelerometerRange(range: AcceleratorRange): void;
 }
 
@@ -697,7 +723,7 @@ declare namespace music {
      * @param enabled whether the built-in speaker is enabled in addition to the sound pin
      */
     //% blockId=music_set_built_in_speaker_enable block="set built-in speaker $enabled"
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% parts=builtinspeaker
     //% help=music/set-built-in-speaker-enabled
     //% enabled.shadow=toggleOnOff
@@ -708,7 +734,7 @@ declare namespace music {
      * Check whether any sound is being played, no matter the source
      */
     //% blockId=music_sound_is_playing block="sound is playing"
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% help=music/is-sound-playing
     //% weight=0 shim=music::isSoundPlaying
     function isSoundPlaying(): boolean;
@@ -716,7 +742,7 @@ declare namespace music {
     /**
      * Defines an optional sample level to generate during periods of silence.
      **/
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% help=music/set-silence-level
     //% level.min=0
     //% level.max=1024
@@ -1293,7 +1319,7 @@ declare namespace input {
      */
     //% weight=83 blockGap=32
     //% blockId=input_logo_event block="on logo $action"
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% parts="logotouch"
     //% help="input/on-logo-event" shim=input::onLogoEvent
     function onLogoEvent(action: TouchButtonEvent, body: () => void): void;
@@ -1304,7 +1330,7 @@ declare namespace input {
     //% weight=58
     //% blockId="input_logo_is_pressed" block="logo is pressed"
     //% blockGap=8
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% parts="logotouch"
     //% help="input/logo-is-pressed" shim=input::logoIsPressed
     function logoIsPressed(): boolean;
@@ -1321,7 +1347,7 @@ declare namespace pins {
     //% weight=60
     //% blockId=device_touch_set_type block="set %name to touch mode %mode"
     //% advanced=true
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% help=pins/touch-set-mode shim=pins::touchSetMode
     function touchSetMode(name: TouchTarget, mode: TouchTargetMode): void;
 }

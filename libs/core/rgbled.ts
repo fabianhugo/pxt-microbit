@@ -9,13 +9,18 @@ namespace basic {
     let _rgbBuf1: Buffer = null  // 3 bytes — for single-LED ops (v1/v2/v3 LED0)
     let _rgbBuf3: Buffer = null  // 9 bytes — for 3-LED ops (v3 only)
 
+    // Hardware brightness prescale for the onboard RGB LED (full WS2812 drive is
+    // blinding). The simulator reverses exactly this factor to recover the original
+    // color — keep in sync with updateRgbLedState in sim/state/misc.ts.
+    const _rgbBrightnessPercent = 20
+
     function _latch(): void {
         control.waitMicros(1000)
         pins.digitalWritePin(DigitalPin.RGB, 0)
     }
 
     function _setSingleLed(color: number): void {
-        const br = 20
+        const br = _rgbBrightnessPercent
         const g = ((color >> 8) & 0xFF) * br / 100
         const r = ((color >> 16) & 0xFF) * br / 100
         const b = (color & 0xFF) * br / 100
@@ -64,16 +69,23 @@ namespace basic {
     /**
      * Sets individual colors on the three built-in RGB LEDs (Calliope mini v3 only).
      * Has no effect on Calliope mini v1/v2 which have a single RGB LED.
+     * @param brightness brightness of the LEDs in percent, eg: 20
      */
     //% help=basic/set-led-colors
     //% blockId=device_set_led_colors
-    //% block="set LEDs to %color1=colorNumberPicker|%color2=colorNumberPicker|%color3=colorNumberPicker"
+    //% block="set LED to %color1=colorNumberPicker %color2=colorNumberPicker %color3=colorNumberPicker || brightness %brightness"
     //% color1.defl=0xff0000 color2.defl=0xff0080 color3.defl=0xff00ff
+    //% brightness.defl=20
+    //% expandableArgumentMode="toggle"
+    //% inlineInputMode=inline
     //% weight=11 group="RGB LED"
-    export function setLedColors(color1: number, color2: number, color3: number): void {
+    export function setLedColors(color1: number, color2: number, color3: number, brightness: number = 20): void {
         if (hardware._rgbLedCount() < 3) return
         if (!_rgbBuf3) _rgbBuf3 = pins.createBuffer(9)
-        const br = 20
+        // Block string/signature matches pxt-calliope (crowdin translation key).
+        // The simulator decode (sim/state/misc.ts) assumes the default 20%
+        // prescale, so a custom brightness renders approximately in the sim.
+        const br = Math.clamp(0, 100, brightness)
         _rgbBuf3[0] = ((color1 >> 8) & 0xFF) * br / 100
         _rgbBuf3[1] = ((color1 >> 16) & 0xFF) * br / 100
         _rgbBuf3[2] = (color1 & 0xFF) * br / 100

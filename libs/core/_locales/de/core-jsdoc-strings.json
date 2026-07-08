@@ -2,5 +2,5 @@
   "motors": "Blöcke, die genutzt werden, um Onboard-Motoren zu steuern",
   "motors.dualMotorPower": "Steuert zwei an das Board angeschlossene Motoren.",
   "motors.dualMotorPower|param|motor": "welcher Motor gesteuert wird",
-  "motors.dualMotorPower|param|duty_percent": "Leistung in Prozent, negativ für Rückwärtsfahrt. z.B. 100"
+  "motors.dualMotorPower|param|percent": "Leistung in Prozent, negativ für Rückwärtsfahrt. z.B. 100"
 }

@@ -185,6 +185,7 @@ namespace input {
     //% blockId=device_button_event block="on button|%NAME|pressed"
     //% parts="buttonpair"
     //% deprecated=true
+    //% group="Events"
     void onButtonPressed(Button button, Action body) {
         onButtonEvent(button, MICROBIT_BUTTON_EVT_CLICK, body);
     }
@@ -198,6 +199,7 @@ namespace input {
     //% blockId=device_gesture_event block="on |%NAME"
     //% parts="accelerometer"
     //% NAME.fieldEditor="gestures" NAME.fieldOptions.columns=4
+    //% group="Events"
     void onGesture(Gesture gesture, Action body) {
         int gi = (int)gesture;
         if (gi == MICROBIT_ACCELEROMETER_EVT_3G && uBit.accelerometer.getRange() < 3)
@@ -215,6 +217,7 @@ namespace input {
     //% blockId=deviceisgesture block="is %gesture gesture"
     //% parts="accelerometer"
     //% gesture.fieldEditor="gestures" gesture.fieldOptions.columns=4
+    //% group="States"
     bool isGesture(Gesture gesture) {
         // turn on acceleration
         uBit.accelerometer.getX();
@@ -249,6 +252,7 @@ namespace input {
     //% help=input/on-pin-pressed weight=83 blockGap=32
     //% blockId=device_pin_event block="on pin %name|pressed"
     //% deprecated=true
+    //% group="Events"
     void onPinPressed(TouchPin name, Action body) {
         onPinTouchEvent(name, MICROBIT_BUTTON_EVT_CLICK, body);
     }
@@ -261,6 +265,8 @@ namespace input {
     //% help=input/on-pin-released weight=6 blockGap=16
     //% blockId=device_pin_released block="on pin %NAME|released"
     //% advanced=true
+    //% group="Events"
+    //% deprecated=true
     void onPinReleased(TouchPin name, Action body) {
         auto pin = getPin((int)name);
         if (!pin) return;
@@ -279,6 +285,7 @@ namespace input {
     //% blockId=device_get_button2
     //% icon="\uf192" blockGap=8
     //% parts="buttonpair"
+    //% group="States"
     bool buttonIsPressed(Button button) {
       if (button == Button::A)
         return uBit.buttonA.isPressed();
@@ -296,6 +303,7 @@ namespace input {
     //% help=input/pin-is-pressed weight=58
     //% blockId="device_pin_is_pressed" block="pin %NAME|is pressed"
     //% blockGap=8
+    //% group="States"
     bool pinIsPressed(TouchPin name) {
         auto pin = getPin((int)name);
         return pin && pin->isTouched();
@@ -315,6 +323,7 @@ namespace input {
     //% help=input/acceleration weight=58
     //% blockId=device_acceleration block="acceleration (mg)|%NAME" blockGap=8
     //% parts="accelerometer"
+    //% group="Sensors"
     int acceleration(Dimension dimension) {
       switch (dimension) {
       case Dimension::X: return uBit.accelerometer.getX();
@@ -331,6 +340,7 @@ namespace input {
     //% help=input/light-level weight=57
     //% blockId=device_get_light_level block="light level" blockGap=8
     //% parts="ledmatrix"
+    //% group="Sensors"
     int lightLevel() {
         return uBit.display.readLightLevel();
     }
@@ -342,6 +352,7 @@ namespace input {
     //% weight=56
     //% blockId=device_heading block="compass heading (°)" blockGap=8
     //% parts="compass"
+    //% group="Sensors"
     int compassHeading() {
         return uBit.compass.heading();
     }
@@ -354,6 +365,7 @@ namespace input {
     //% help=input/temperature
     //% blockId=device_temperature block="temperature (°C)" blockGap=8
     //% parts="thermometer"
+    //% group="Sensors"
     int temperature() {
         return uBit.thermometer.getTemperature();
     }
@@ -365,6 +377,7 @@ namespace input {
     //% help=input/rotation weight=52
     //% blockId=device_get_rotation block="rotation (°)|%NAME" blockGap=8
     //% parts="accelerometer" advanced=true
+    //% group="Sensors"
     int rotation(Rotation kind) {
       switch (kind) {
       case Rotation::Pitch: return uBit.accelerometer.getPitch();
@@ -381,6 +394,7 @@ namespace input {
     //% blockId=device_get_magnetic_force block="magnetic force (µT)|%NAME" blockGap=8
     //% parts="compass"
     //% advanced=true
+    //% group="Sensors"
     TNumber magneticForce(Dimension dimension) {
         /* https://github.com/microsoft/pxt-microbit/issues/4995
         if (!uBit.compass.isCalibrated())
@@ -402,6 +416,7 @@ namespace input {
     //% help=input/calibrate-compass advanced=true
     //% blockId="input_compass_calibrate" block="calibrate compass"
     //% weight=55
+    //% group="Configuration"
     void calibrateCompass() {
         uBit.compass.calibrate();
     }
@@ -415,6 +430,7 @@ namespace input {
     //% weight=5
     //% parts="accelerometer"
     //% advanced=true
+    //% group="Configuration"
     void setAccelerometerRange(AcceleratorRange range) {
         uBit.accelerometer.setRange((int)range);
     }

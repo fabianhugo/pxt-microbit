@@ -261,7 +261,9 @@ class DAPWrapper implements pxt.packetio.PacketIOWrapper {
         if (this.usesCODAL === undefined)
             console.warn('try to access codal information before it is computed')
         if (!this.usesCODAL) {
-            return ["logotouch", "builtinspeaker", "microphone", "flashlog", "v2"]
+            // "microphone" is NOT listed: v1/v2 read the analog MEMS mic via
+            // the DAL fallback in libs/microphone/microphone.cpp
+            return ["logotouch", "builtinspeaker", "flashlog", "v2"]
         }
         return [];
     }
@@ -1023,6 +1025,8 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
     private serialPort:   any /* SerialPort */ = null;
     private serialReader: any /* ReadableStreamDefaultReader<Uint8Array> */ = null;
     private serialGen     = 0; // bumped on stop to cancel the read loop
+    private serialLoopEnd: Promise<void> = Promise.resolve(); // settles when the read loop has released its lock
+    private serialRetries = 0; // transient bring-up failures retried so far (see scheduleSerialRetry)
 
     constructor(
         public readonly io: pxt.packetio.PacketIO,
@@ -1112,6 +1116,7 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
             this.io.onConnectionChanged();
 
             // start serial reader (best-effort; failure must not break flashing)
+            this.serialRetries = 0;
             this.startSerialAsync()
                 .catch(e => log(`jlink serial: start failed: ${(e as Error).message}`));
         } catch (e) {
@@ -1120,6 +1125,13 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
             this.connecting  = false;
             this.removeDisconnectListener();
             this.removeConnectListener();
+            // Leave the device fully closed so the next attempt starts clean:
+            // an open device with a claimed interface makes the next
+            // claimInterface() fail ("interface already claimed") until replug.
+            if (this.device.opened) {
+                try { await this.device.releaseInterface(JLINK_INTERFACE); } catch (err) { }
+                try { await this.device.close(); } catch (err) { }
+            }
             this.io.onConnectionChanged();
             throw e;
         }
@@ -1129,7 +1141,7 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
         log("jlink: disconnect");
         this.initialized = false;
         this.connecting  = false;
-        this.stopSerial();
+        await this.stopSerial();
         this.removeDisconnectListener();
         this.removeConnectListener();
         if (this.device.opened) {
@@ -1161,26 +1173,47 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
         if (!hexFile)
             throw new Error(lf("Download failed: firmware not found"));
 
-        const data = pxt.U.stringToUint8Array(hexFile);
-        const totalChunks = Math.ceil(data.length / JLINK_MSD_CHUNK_SIZE);
-        for (let i = 0; i < totalChunks; i++) {
-            const chunk = data.slice(
-                i * JLINK_MSD_CHUNK_SIZE,
-                Math.min((i + 1) * JLINK_MSD_CHUNK_SIZE, data.length)
+        // Quiesce the CDC serial reader while the probe flashes and resets the
+        // target; restarted after the flash so the monitor keeps working.
+        await this.stopSerial();
+
+        try {
+            await pxt.Util.promiseTimeout(
+                FULL_FLASH_TIMEOUT,
+                (async () => {
+                    const data = pxt.U.stringToUint8Array(hexFile);
+                    const totalChunks = Math.ceil(data.length / JLINK_MSD_CHUNK_SIZE);
+                    for (let i = 0; i < totalChunks; i++) {
+                        const chunk = data.slice(
+                            i * JLINK_MSD_CHUNK_SIZE,
+                            Math.min((i + 1) * JLINK_MSD_CHUNK_SIZE, data.length)
+                        );
+                        await this.sendCmd(jlinkBuildProbeInfoCmd(PROBE_INFO_WRITE_CHUNK, chunk), false);
+                        if (progressCallback) progressCallback((i + 1) / totalChunks);
+                    }
+
+                    const finResp = await this.sendCmd(jlinkBuildProbeInfoCmd(PROBE_INFO_WRITE_END));
+                    if (finResp.byteLength !== 4)
+                        throw new Error(`J-Link finalize: expected 4 B, got ${finResp.byteLength}`);
+
+                    const result = finResp[0] | (finResp[1] << 8) | (finResp[2] << 16) | (finResp[3] << 24);
+                    if (result !== 0)
+                        throw new Error(lf("Download failed (J-Link error {0})", result));
+                })(),
+                lf("Download timed out, please try again")
             );
-            await this.sendCmd(jlinkBuildProbeInfoCmd(PROBE_INFO_WRITE_CHUNK, chunk), false);
-            if (progressCallback) progressCallback((i + 1) / totalChunks);
+        } catch (e) {
+            pxt.tickEvent("hid.jlink.flash.error");
+            throw e;
         }
 
-        const finResp = await this.sendCmd(jlinkBuildProbeInfoCmd(PROBE_INFO_WRITE_END));
-        if (finResp.byteLength !== 4)
-            throw new Error(`J-Link finalize: expected 4 B, got ${finResp.byteLength}`);
-
-        const result = finResp[0] | (finResp[1] << 8) | (finResp[2] << 16) | (finResp[3] << 24);
-        if (result !== 0)
-            throw new Error(lf("Download failed (J-Link error {0})", result));
-
         pxt.tickEvent("hid.jlink.flash.success");
+        // resume the serial monitor (best-effort; must not fail the download).
+        // Fresh retry budget: the CDC device may take a few seconds to come
+        // back after the post-flash target reset.
+        this.serialRetries = 0;
+        this.startSerialAsync()
+            .catch(e => logSerial(`restart after flash failed: ${(e as Error).message}`));
     }
 
     sendCustomEventAsync(_type: string, _payload: Uint8Array): Promise<void> {
@@ -1188,8 +1221,10 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
     }
 
     unsupportedParts(): string[] {
-        // mbdal firmware: same constraints as Calliope v1
-        return ["logotouch", "builtinspeaker", "microphone", "flashlog", "v2"];
+        // mbdal firmware: same constraints as Calliope v1. "microphone" is NOT
+        // listed: v1/v2 read the analog MEMS mic via the DAL fallback in
+        // libs/microphone/microphone.cpp
+        return ["logotouch", "builtinspeaker", "flashlog", "v2"];
     }
 
     /**
@@ -1217,8 +1252,11 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
         let port: any = null;
         try {
             const ports: any[] = await nav.serial.getPorts();
+            // Fall back to the sole granted port only if it reports no vendor id
+            // (the Pop!_OS case); a port that positively identifies as another
+            // vendor's device (e.g. an Arduino) must not be hijacked.
             port = ports.find(p => infoOf(p).usbVendorId === JLINK_VID)
-                ?? (ports.length === 1 ? ports[0] : null);
+                ?? (ports.length === 1 && infoOf(ports[0]).usbVendorId == undefined ? ports[0] : null);
             if (port) logSerial("reusing granted port");
         } catch (e) {
             logSerial(`getPorts failed: ${(e as Error).message}`);
@@ -1230,8 +1268,10 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
         if (!port) {
             const activation = nav.userActivation;
             if (activation && !activation.isActive) {
-                logSerial("no granted port and no user activation; " +
-                    "reconnect the device to grant serial access");
+                logSerial("no granted port and no user activation");
+                // Right after a flash the CDC device may still be re-enumerating
+                // and briefly absent from getPorts() — retry, don't give up.
+                this.scheduleSerialRetry();
                 return;
             }
             try {
@@ -1250,9 +1290,11 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
         try {
             await port.open({ baudRate: 115200 });
         } catch (e) {
-            // e.g. "Failed to open serial port" when another process (minicom,
-            // screen, ModemManager, cat) already holds /dev/ttyACM0.
+            // e.g. the OS is still re-binding the CDC device after the
+            // post-flash target reset, or another process (minicom, screen,
+            // ModemManager, cat) holds /dev/ttyACM0 — usually transient.
             logSerial(`open failed: ${(e as Error).message}`);
+            this.scheduleSerialRetry();
             return;
         }
         // a stop() may have happened while we were opening
@@ -1260,53 +1302,108 @@ class JLinkPacketIOWrapper implements pxt.packetio.PacketIOWrapper {
             try { await port.close(); } catch (e) { }
             return;
         }
+        this.serialRetries = 0; // serial is up — reset the retry budget
         this.serialPort = port;
         logSerial("port open @115200");
 
-        this.readSerialLoop(gen);
+        this.serialLoopEnd = this.readSerialLoop(gen);
+    }
+
+    /**
+     * Retry the serial bring-up after a transient failure (port briefly gone
+     * from getPorts() or not yet openable while the device re-enumerates after
+     * a flash). Bounded so a genuinely unavailable port doesn't retry forever;
+     * the budget resets whenever serial comes up or the device reconnects.
+     */
+    private scheduleSerialRetry(): void {
+        if (this.serialRetries >= 10) {
+            logSerial("giving up on serial after repeated failures; replug to retry");
+            return;
+        }
+        this.serialRetries++;
+        const gen = this.serialGen;
+        setTimeout(() => {
+            // only if nothing else (stop/flash/new start) intervened
+            if (gen === this.serialGen && this.initialized && !this.serialPort)
+                this.startSerialAsync()
+                    .catch(e => logSerial(`serial retry failed: ${(e as Error).message}`));
+        }, 2000);
     }
 
     private async readSerialLoop(gen: number): Promise<void> {
-        const reader = this.serialPort.readable?.getReader();
-        if (!reader) { logSerial("no readable stream on port"); return; }
-        this.serialReader = reader;
+        const port = this.serialPort;
         try {
-            while (gen === this.serialGen && this.initialized) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                if (value && value.length) {
-                    try {
-                        this.onSerial(new Uint8Array(value.buffer, value.byteOffset, value.byteLength), false);
-                    } catch (err) {
-                        logSerial(`decode error: ${(err as Error).message}`);
+            // Canonical Web Serial read pattern: a NON-fatal read error (e.g.
+            // buffer overrun when the program floods serial output) ends the
+            // current readable stream but the port stays open and exposes a
+            // fresh port.readable — so re-acquire a reader and keep reading.
+            // Only a fatal error (device lost) leaves port.readable null.
+            while (gen === this.serialGen && this.initialized && port.readable) {
+                const reader = port.readable.getReader();
+                this.serialReader = reader;
+                try {
+                    while (gen === this.serialGen && this.initialized) {
+                        const { value, done } = await reader.read();
+                        if (done) return; // stream ended (usually stopSerial's cancel)
+                        if (value && value.length) {
+                            try {
+                                this.onSerial(new Uint8Array(value.buffer, value.byteOffset, value.byteLength), false);
+                            } catch (err) {
+                                logSerial(`decode error: ${(err as Error).message}`);
+                            }
+                        }
                     }
+                } catch (e) {
+                    if (gen === this.serialGen)
+                        logSerial(`read error, reopening reader: ${(e as Error).message}`);
+                } finally {
+                    try { reader.releaseLock(); } catch (e) { }
+                    if (this.serialReader === reader) this.serialReader = null;
                 }
             }
-        } catch (e) {
-            if (gen === this.serialGen)
-                logSerial(`read error: ${(e as Error).message}`);
         } finally {
-            try { reader.releaseLock(); } catch (e) { }
-            if (this.serialReader === reader) this.serialReader = null;
+            // Spontaneous end (fatal error / EOF) while still connected: the
+            // port object is dead but was left open, which used to require a
+            // page refresh to revive serial. Release it and retry the whole
+            // serial bring-up shortly; retries repeat every 2s until the
+            // device disconnects or serial comes back.
+            if (gen === this.serialGen && this.initialized) {
+                if (this.serialPort === port) this.serialPort = null;
+                try { await port.close(); } catch (e) { }
+                logSerial("serial ended unexpectedly; retrying in 2s");
+                setTimeout(() => {
+                    if (gen === this.serialGen && this.initialized)
+                        this.startSerialAsync()
+                            .catch(e => logSerial(`serial restart failed: ${(e as Error).message}`));
+                }, 2000);
+            }
         }
     }
 
-    /** Cancel the read loop and close the serial port (best-effort, sync-safe). */
-    private stopSerial(): void {
+    /**
+     * Cancel the read loop and close the serial port (best-effort).
+     * Resolves once the port is actually closed, so callers that need the
+     * port free (flash, disconnect) can await it; fire-and-forget callers
+     * may ignore the promise (errors are logged internally).
+     */
+    private stopSerial(): Promise<void> {
         this.serialGen++; // signal the loop to exit
         const reader = this.serialReader;
         this.serialReader = null;
         const port = this.serialPort;
         this.serialPort = null;
+        const loopEnd = this.serialLoopEnd;
         if (reader) {
             try { reader.cancel(); } catch (e) { }
         }
-        if (port) {
-            // close after the reader has released its lock
-            Promise.resolve()
-                .then(() => port.close())
-                .catch((e: Error) => logSerial(`close failed: ${e.message}`));
-        }
+        if (!port) return Promise.resolve();
+        // Close only after the read loop's finally block has released the
+        // stream lock — close() on a still-locked readable rejects, which
+        // would silently leak the open port until the tab is reloaded.
+        return loopEnd
+            .catch(() => { })
+            .then(() => port.close())
+            .catch((e: Error) => logSerial(`close failed: ${e.message}`));
     }
 
     private async sendCmd(cmd: Uint8Array, expectResp = true): Promise<Uint8Array> {

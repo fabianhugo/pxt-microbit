@@ -16,14 +16,15 @@ namespace motors {
 
     /**
     * Controls two motors attached to the board.
+    * @param percent power from -100 to 100; negative runs the motor backward, eg: 100
     */
     //% blockId=block_dual_motor block="motor %motor|at %percent \\%"
     //% percent.shadow="speedPicker"
     //% weight=80
-    //% duty_percent.defl=100
+    //% percent.defl=100
     //% parts="motor" trackArgs=0
     //% group="Calliope mini V3"
-    export function dualMotorPower(motor: Motor, duty_percent: number) {
+    export function dualMotorPower(motor: Motor, percent: number) {
         const driverType = hardware._motorDriverType()
         if (driverType === 0) return
 
@@ -31,10 +32,10 @@ namespace motors {
 
         if (driverType === 1) {
             // v1/v2: one bidirectional motor on the single DRV8837 (see driveSingleMotorDal).
-            driveSingleMotorDal(duty_percent)
+            driveSingleMotorDal(percent)
         } else {
             // Calliope v3 codal: dual H-bridge
-            const power = Math.clamp(-1023, 1023, Math.map(duty_percent, -100, 100, -1023, 1023))
+            const power = Math.clamp(-1023, 1023, Math.map(percent, -100, 100, -1023, 1023))
             if (motor === Motor.M0 || motor === Motor.M0_M1) {
                 pins.digitalWritePin(DigitalPin.M0_DIR, ((power < 0) ? 1 : 0))
                 pins.analogWritePin(AnalogPin.M0_SPEED, Math.abs(power))
@@ -50,7 +51,7 @@ namespace motors {
     * Controls the single onboard motor on Calliope mini v1/v2.
     * @param percent power from -100 to 100; negative runs the motor backward, eg: 100
     */
-    //% blockId=block_single_motor block="motor at %percent \\%"
+    //% blockId=block_single_motor block="motor on at %percent \\%"
     //% percent.shadow="speedPicker"
     //% percent.defl=100
     //% weight=75

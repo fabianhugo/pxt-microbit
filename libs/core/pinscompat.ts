@@ -19,10 +19,20 @@ enum AnalogReadWritePin {
     //% blockIdentity="pins._analogReadWritePinShadow"
     P3 = AnalogPin.P3,
     //% blockIdentity="pins._analogReadWritePinShadow"
+    C4 = AnalogPin.C4,
+    //% blockIdentity="pins._analogReadWritePinShadow"
+    //% blockHidden=true
     P4 = AnalogPin.P4,
     //% blockIdentity="pins._analogReadWritePinShadow"
+    C10 = AnalogPin.C10,
+    //% blockIdentity="pins._analogReadWritePinShadow"
+    //% blockHidden=true
     P10 = AnalogPin.P10,
     //% blockIdentity="pins._analogReadWritePinShadow"
+    //% block="C16 (A1 RX)"
+    C16 = AnalogPin.C16,
+    //% blockIdentity="pins._analogReadWritePinShadow"
+    //% blockHidden=true
     P16 = AnalogPin.P16,
 }
 

@@ -281,6 +281,10 @@ namespace pxsim.visuals {
             stroke:#D4AF37;
             stroke-width:2px;
         }
+        .sim-pin.touched {
+            stroke:darkorange;
+            stroke-width:2.5px;
+        }
         .sim-pin-touch.touched:hover {
             stroke:darkorange;
         }
@@ -2326,7 +2330,14 @@ namespace pxsim.visuals {
             const boardBody = this.domHardwareVersion == 2 ? BOARD_MINI2_BODY : BOARD_MINI3_BODY;
             const boardPinTitles = this.domHardwareVersion == 2 ? pinTitlesV2 : pinTitles;
             const SVG_CODE = BOARD_SVG_HEAD + boardBody + BOARD_SVG_BOTTOM;
-            this.element = new DOMParser().parseFromString(SVG_CODE, "image/svg+xml").querySelector("svg") as SVGSVGElement;
+            const boardDoc = new DOMParser().parseFromString(SVG_CODE, "image/svg+xml");
+            this.element = boardDoc.querySelector("svg") as SVGSVGElement;
+            if (!this.element || boardDoc.querySelector("parsererror")) {
+                // A malformed body string must not leave this.element null/garbage —
+                // fail loudly with a usable (if empty) svg root instead.
+                console.error("sim: board SVG failed to parse", boardDoc.querySelector("parsererror")?.textContent);
+                this.element = document.createElementNS("http://www.w3.org/2000/svg", "svg") as SVGSVGElement;
+            }
             svg.hydrate(this.element, {
                 "version": "1.0",
                 "viewBox": `0 0 ${MB_WIDTH} ${MB_HEIGHT}`,
@@ -2363,10 +2374,18 @@ namespace pxsim.visuals {
             // leds
             this.leds = [];
             this.ledsOuter = [];
-            const left = Number(this.element.getElementById("LED_0_0").getAttribute("x"));
-            const top = Number(this.element.getElementById("LED_0_0").getAttribute("y"));
-            const ledoffw = Number(this.element.getElementById("LED_1_0").getAttribute("x"))-left;
-            const ledoffh = Number(this.element.getElementById("LED_0_1").getAttribute("y"))-top;
+            // Reference LEDs from the board artwork define the matrix grid; if an id is
+            // missing (renamed artwork), warn and fall back to the known coordinates
+            // instead of throwing and leaving the whole simulator blank.
+            const led00 = this.element.getElementById("LED_0_0");
+            const led10 = this.element.getElementById("LED_1_0");
+            const led01 = this.element.getElementById("LED_0_1");
+            if (!led00 || !led10 || !led01)
+                console.warn("sim: LED reference elements (LED_0_0/LED_1_0/LED_0_1) missing from board SVG");
+            const left = Number(led00?.getAttribute("x") ?? 210.7);
+            const top = Number(led00?.getAttribute("y") ?? 146.2);
+            const ledoffw = Number(led10?.getAttribute("x") ?? 236.8) - left;
+            const ledoffh = Number(led01?.getAttribute("y") ?? 171.7) - top;
             // const ledw = 5.1;
             // const ledh = 12.9;
             for (let i = 0; i < 5; ++i) {
@@ -2400,9 +2419,14 @@ namespace pxsim.visuals {
             // P0, P1, P2, P3
             this.pins = pinNames.map(n => {
 				let p = this.element.getElementById(n) as SVGElement;
-				// if(!p) console.log("missing "+n);
+				if (!p) {
+					// Missing pin id in the artwork (e.g. present in only one board
+					// body): warn and substitute an invisible placeholder so the
+					// board still builds and downstream per-pin code stays safe.
+					console.warn(`sim: pin element ${n} missing from board SVG`);
+					p = svg.child(this.g, "rect", { x: 0, y: 0, width: 0, height: 0 }) as SVGElement;
+				}
 				U.addClass(p, "sim-pin");
-                // console.log(p);
 				return p;
 			});
 
@@ -2458,6 +2482,17 @@ namespace pxsim.visuals {
             (<any>this.buttonsOuter[2]).style.visibility = "hidden";
             (<any>this.buttons[2]).style.visibility = "hidden";
 
+            // Microphone activity LED — on the PCB between button B (~450,226) and
+            // the "Mikrofon" group (437-461, 272-292), top-right of the mic; lit
+            // while the program records audio or reads the sound level (see
+            // updateRecordingActive).
+            if (this.domHardwareVersion == 3) {
+                this.microphoneLed = svg.child(this.g, "circle", {
+                    cx: 465, cy: 262, r: 4, fill: "#3f3f3f"
+                });
+                svg.hydrate(this.microphoneLed, { title: pxsim.localization.lf("microphone") });
+            }
+
             this.buttonGroup = svg.child(this.element, "g") as SVGGElement;
 
             // Calliope mini revision toggle (v2 <-> v3), rendered inside the simulator.
@@ -2484,6 +2519,10 @@ namespace pxsim.visuals {
             }) as SVGTextElement;
             label.textContent = "mini " + (this.domHardwareVersion == 2 ? "v2" : "v3");
             svg.hydrate(g, { title: pxsim.localization.lf("Switch Calliope mini revision (v2/v3)") });
+            // Keyboard/screen-reader operability: focusable button, Enter/Space toggles.
+            accessibility.makeFocusable(g);
+            accessibility.setAria(g, "button", pxsim.localization.lf("Switch Calliope mini revision (v2/v3)"));
+            accessibility.enableKeyboardInteraction(g, () => this.toggleHardwareVersion());
             // Swallow pointer events so the board's tilt/accelerometer handlers don't react.
             pointerEvents.down.forEach(evid => g.addEventListener(evid, (ev: Event) => ev.stopPropagation()));
             g.addEventListener("click", (ev: Event) => {
@@ -2682,6 +2721,12 @@ namespace pxsim.visuals {
                     eventSurface.addEventListener(eventName, () => {
                         // console.log(`down ${state.edgeConnectorState.pins[i].id}`)
                         state.edgeConnectorState.pins[index].touched = true;
+                        if (index === 4) {
+                            // logo touch: keep the dedicated Button state (read by
+                            // input.logoIsPressed()) in sync and show press feedback
+                            this.board.logoTouch.pressed = true;
+                            U.addClass(pin, "touched");
+                        }
                         this.updatePin(state.edgeConnectorState.pins[index], index);
                         this.board.bus.queue(state.edgeConnectorState.pins[index].id, DAL.MICROBIT_BUTTON_EVT_DOWN);
                         pressedTime = runtime.runningTime();
@@ -2692,6 +2737,10 @@ namespace pxsim.visuals {
                     let state = this.board;
                     // console.log(`up ${state.edgeConnectorState.pins[i].id}, index ${index}`)
                     state.edgeConnectorState.pins[index].touched = false;
+                    if (index === 4) {
+                        this.board.logoTouch.pressed = false;
+                        U.removeClass(pin, "touched");
+                    }
                     this.updatePin(state.edgeConnectorState.pins[index], index);
                     this.board.bus.queue(state.edgeConnectorState.pins[index].id, DAL.MICROBIT_BUTTON_EVT_UP);
                     const currentTime = runtime.runningTime()

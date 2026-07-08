@@ -7,5 +7,5 @@
   "FlashLogTimeStampFormat.Seconds|block": "seconds",
   "flashlog|block": "flashlog",
   "{id:category}Flashlog": "Flashlog",
-  "{id:group}micro:bit (V2)": "micro:bit (V2)"
+  "{id:group}Calliope mini V3": "Calliope mini V3"
 }
