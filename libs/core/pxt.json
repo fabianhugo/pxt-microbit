@@ -28,7 +28,6 @@
         "basic.ts",
         "icons.ts",
         "icons.jres",
-        "compass.ts",
         "input.cpp",
         "input.ts",
         "gestures.jres",
@@ -119,16 +118,19 @@
                     "advertising_timeout": 0,
                     "tx_power": 6,
                     "dfu_service": 1,
-                    "event_service": 1,
+                    "event_service": 0,
                     "device_info_service": 1,
-                    "eddystone_url": 1,
-                    "eddystone_uid": 1,
+                    "eddystone_url": 0,
+                    "eddystone_uid": 0,
                     "open": 0,
                     "pairing_mode": 1,
                     "whitelist": 1,
                     "security_level": "SECURITY_MODE_ENCRYPTION_NO_MITM",
                     "partial_flashing": 1
-                }
+                },
+                "stack_size": 2048,
+                "gatt_table_size": "0x600",
+                "panic_on_heap_full": 1
             }
         },
         "userConfigs": [

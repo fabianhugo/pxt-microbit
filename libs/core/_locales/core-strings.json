@@ -308,7 +308,6 @@
   "basic.setLedColors|block": "set LED to %color1=colorNumberPicker %color2=colorNumberPicker %color3=colorNumberPicker || brightness %brightness",
   "basic.setLedColor|block": "set LED to %color=colorNumberPicker",
   "basic.showArrow|block": "show arrow %i=device_arrow",
-  "basic.showCompass|block": "show compass needle for $interval|ms",
   "basic.showIcon|block": "show icon %i || for %interval ms",
   "basic.showLeds|block": "show leds",
   "basic.showNumber|block": "show|number %number || in an interval of %interval ms",

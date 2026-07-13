@@ -272,8 +272,6 @@
   "basic.showArrow": "Draws an arrow on the LED screen",
   "basic.showArrow|param|direction": "the direction of the arrow",
   "basic.showArrow|param|interval": "the amount of time (milliseconds) to show the icon. Default is 600.",
-  "basic.showCompass": "Draws needle on the screen which always points to north",
-  "basic.showCompass|param|interval": "the amount of time (milliseconds) to show the needle. Default is 600.",
   "basic.showIcon": "Draws the selected icon on the LED screen",
   "basic.showIcon|param|icon": "the predefined icon id",
   "basic.showIcon|param|interval": "the amount of time (milliseconds) to show the icon. Default is 600.",

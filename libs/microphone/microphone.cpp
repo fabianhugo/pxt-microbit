@@ -34,31 +34,61 @@ void init() {
 
 #else
 // Calliope mini v1/v2: analog MEMS microphone on uBit.io.MIC (no codal
-// LevelDetector). soundLevel() samples the peak-to-peak amplitude like
-// pxt-calliope does; onSound() runs a background fiber that compares the level
-// against the thresholds and raises loud/quiet events with simple hysteresis.
+// LevelDetector). The old sampler took one ADC point sample every ~6 ms,
+// which listens to the waveform only ~1% of the time and randomly misses
+// short transients like claps. Instead, sample in dense sub-bursts of
+// back-to-back ADC reads (~2.5 ms each, one conversion is ~68 us on nRF51)
+// with a one-tick uBit.sleep() after every sub-burst. The sleep is
+// load-bearing: the DAL idle fiber runs only when the run queue is empty,
+// and it is what drains the deferred MessageBus queue — i.e. every
+// registerWithDal handler and the display animation events that
+// showLeds/showString block on. A watcher that stays runnable for tens of
+// milliseconds starves those and makes the display stutter. With the
+// per-sub-burst sleep the mic still listens ~40% of the time (vs ~1%
+// before) and the worst gap between bursts is ~3.5 ms, shorter than any
+// audible transient. Every 12 sub-bursts (~72 ms) the accumulated
+// peak-to-peak amplitude (range/4, 0..255 like pxt-calliope) is compared
+// against the thresholds with simple hysteresis.
 #define CALLIOPE_ID_MICROPHONE 4001
 
+#define MIC_SUBBURST_SAMPLES 32   // ~2.5 ms of back-to-back ADC reads
+#define MIC_SUBBURSTS_PER_EVAL 12 // ~72 ms per evaluation window
+
 static bool micFiberStarted;
-// Measured on v1/v2 hardware with the p-p/4 scale: ~20 in a quiet room,
-// 60-120 during a clap — so the loud default sits below the clap band,
-// not at the block default of 128 (unreachable on this scale).
+// Dense sampling reads transients equal-or-higher than the old spaced
+// sampling did (it no longer misses the peaks), so the clap band measured at
+// 60-120 with the old sampler is a lower bound — re-measure before tuning.
+// The block default of 128 stays unreachable in normal rooms on this scale.
 static int loudThreshold = 64;
 static int quietThreshold = 40;
+static int lastSoundLevel;
 
-static int readSoundLevelDal() {
+static void sampleSubBurst(int *min, int *max) {
+    for (int i = 0; i < MIC_SUBBURST_SAMPLES; i++) {
+        int level = uBit.io.MIC.getAnalogValue();
+        if (level > *max)
+            *max = level;
+        if (level < *min)
+            *min = level;
+    }
+}
+
+static int measureSoundLevelDal() {
     int min = 1023;
     int max = 0;
-    for (int i = 0; i < 32; i++) {
-        int level = uBit.io.MIC.getAnalogValue();
-        if (level > max)
-            max = level;
-        if (level < min)
-            min = level;
-        uBit.sleep(5); // allow the analog input to settle
+    for (int i = 0; i < MIC_SUBBURSTS_PER_EVAL; i++) {
+        sampleSubBurst(&min, &max);
+        // wakes on the next 6 ms scheduler tick; empties the run queue so the
+        // idle fiber can deliver queued events and service idle components
+        uBit.sleep(1);
     }
-    int range = max - min;
-    return range / 4; // 0..255
+    return (max - min) / 4; // 0..255
+}
+
+static int readSoundLevelDal() {
+    if (micFiberStarted)
+        return lastSoundLevel; // at most one evaluation window (~72 ms) old
+    return measureSoundLevelDal();
 }
 
 static void micWatcher() {
@@ -66,7 +96,8 @@ static void micWatcher() {
     // the first loud event as soon as it happens
     bool loud = false;
     while (true) {
-        int level = readSoundLevelDal(); // ~160 ms per reading, sleeps inside
+        int level = measureSoundLevelDal(); // sleeps every sub-burst inside
+        lastSoundLevel = level;
         if (!loud && level >= loudThreshold) {
             loud = true;
             MicroBitEvent(CALLIOPE_ID_MICROPHONE, (int)DetectedSound::Loud);
