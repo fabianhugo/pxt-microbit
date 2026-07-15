@@ -10,7 +10,7 @@ namespace pxt {
 void debuglog(const char *format, ...);
 }
 
-// #define GC_GET_HEAP_SIZE() device_heap_size(0)
+// #define GC_GET_HEAP_SIZE() microbit_heap_size(0)
 #define xmalloc malloc
 #define xfree free
 

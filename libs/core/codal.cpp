@@ -41,7 +41,7 @@ extern "C" void target_reset() {
 }
 #endif
 
-uint32_t device_heap_size(uint8_t heap_index); // defined in microbit-dal
+uint32_t microbit_heap_size(uint8_t heap_index); // defined in microbit-dal
 
 namespace pxt {
 
@@ -57,8 +57,8 @@ void platform_init() {
 
 void initMicrobitGC() {
     uBit.init();
-    if (device_heap_size(1) > NON_GC_HEAP_RESERVATION + 4)
-        gcPreAllocateBlock(device_heap_size(1) - NON_GC_HEAP_RESERVATION);
+    if (microbit_heap_size(1) > NON_GC_HEAP_RESERVATION + 4)
+        gcPreAllocateBlock(microbit_heap_size(1) - NON_GC_HEAP_RESERVATION);
 }
 
 void platform_init();

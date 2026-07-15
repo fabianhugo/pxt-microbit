@@ -2335,7 +2335,8 @@ namespace pxsim.visuals {
             if (!this.element || boardDoc.querySelector("parsererror")) {
                 // A malformed body string must not leave this.element null/garbage —
                 // fail loudly with a usable (if empty) svg root instead.
-                console.error("sim: board SVG failed to parse", boardDoc.querySelector("parsererror")?.textContent);
+                const parseError = boardDoc.querySelector("parsererror");
+                console.error("sim: board SVG failed to parse", parseError ? parseError.textContent : undefined);
                 this.element = document.createElementNS("http://www.w3.org/2000/svg", "svg") as SVGSVGElement;
             }
             svg.hydrate(this.element, {
@@ -2382,10 +2383,14 @@ namespace pxsim.visuals {
             const led01 = this.element.getElementById("LED_0_1");
             if (!led00 || !led10 || !led01)
                 console.warn("sim: LED reference elements (LED_0_0/LED_1_0/LED_0_1) missing from board SVG");
-            const left = Number(led00?.getAttribute("x") ?? 210.7);
-            const top = Number(led00?.getAttribute("y") ?? 146.2);
-            const ledoffw = Number(led10?.getAttribute("x") ?? 236.8) - left;
-            const ledoffh = Number(led01?.getAttribute("y") ?? 171.7) - top;
+            const ledAttr = (el: Element, name: string, fallback: number) => {
+                const v = el ? el.getAttribute(name) : null;
+                return v == null ? fallback : Number(v);
+            };
+            const left = ledAttr(led00, "x", 210.7);
+            const top = ledAttr(led00, "y", 146.2);
+            const ledoffw = ledAttr(led10, "x", 236.8) - left;
+            const ledoffh = ledAttr(led01, "y", 171.7) - top;
             // const ledw = 5.1;
             // const ledh = 12.9;
             for (let i = 0; i < 5; ++i) {
