@@ -544,6 +544,23 @@ declare namespace control {
     /** Write a message and value (pointer) to DMESG debugging buffer. */
     //% shim=control::dmesgPtr
     function dmesgPtr(str: string, ptr: Object): void;
+
+    /**
+     * Total size in bytes of one of the device's runtime heaps, as reported by the
+     * DAL/CODAL heap allocator. Returns 0 if no heap with that index exists.
+     * @param heapIndex which heap to query (0 = main heap)
+     */
+    //% shim=control::_deviceHeapSize
+    function _deviceHeapSize(heapIndex: int32): uint32;
+
+    /**
+     * Physical RAM fitted to the chip, in bytes, detected at runtime.
+     * On v1/v2 (nRF51) this reads the FICR (microbit_ram_size): 16384 on a 16KB
+     * v1, 32768 on a 32KB v2. Unlike _ramSize(), which returns the fixed 16KB
+     * linker map top, this reflects the actual silicon.
+     */
+    //% shim=control::_physicalRamSize
+    function _physicalRamSize(): uint32;
 }
 declare namespace control {
 

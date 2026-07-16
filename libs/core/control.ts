@@ -139,6 +139,45 @@ namespace control {
         return 32 * 1024 * 1024;
     }
 
+    /**
+     * Total size in bytes of one of the device's runtime heaps (DAL/CODAL heap
+     * allocator). Returns 0 if no heap with that index exists.
+     * @param heapIndex which heap to query (0 = main heap)
+     */
+    //% shim=control::_deviceHeapSize
+    export function deviceHeapSize(heapIndex = 0): number {
+        // simulator: no DAL heap
+        return 0;
+    }
+
+    /**
+     * Physical RAM fitted to the device, in bytes, detected at runtime:
+     * 16384 on Calliope mini v1, 32768 on v2, 131072 on v3. Unlike ramSize(),
+     * which reports the fixed 16KB linker map top (always 16384 on v1/v2),
+     * this reads the actual chip via the FICR.
+     */
+    //% help=control/physical-ram-size
+    //% advanced=true
+    //% shim=control::_physicalRamSize
+    export function physicalRamSize(): number {
+        return 32 * 1024; // simulator
+    }
+
+    /**
+     * Returns the amount of free memory in bytes currently available to your
+     * program, as tracked by the runtime's garbage collector. A garbage
+     * collection is run first, so the value reflects what is free right now.
+     * Note: this is free memory in the managed (GC) heap, not the raw DAL heap
+     * (the DAL exposes only total heap size, via deviceHeapSize).
+     */
+    //% help=control/available-memory
+    //% advanced=true
+    export function availableMemory(): number {
+        gc();
+        const stats = gcStats();
+        return stats ? stats.lastFreeBytes : 0;
+    }
+
     /** Runs the function and returns run time in microseconds. */
     export function benchmark(f: () => void) {
         const t0 = micros()

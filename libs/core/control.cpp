@@ -15,6 +15,11 @@
 
 extern uint32_t __StackTop;
 
+// Total size of a runtime heap. Declared (identically) in microbit-dal's
+// MicroBitHeapAllocator.h and codal-core's CodalHeapAllocator.h; forward-declared
+// here so the shim links on v1/v2 (DAL) and v3 (CODAL) alike — same as codal.cpp does.
+uint32_t device_heap_size(uint8_t heap_index);
+
 /**
  * How to create the event.
  */
@@ -452,6 +457,33 @@ void dmesgPtr(String str, Object_ ptr) {
 uint32_t _ramSize()
 {
     return (uint32_t)&__StackTop & 0x1fffffff;
+}
+
+/**
+* Total size in bytes of one of the device's runtime heaps, as reported by the
+* DAL/CODAL heap allocator. Returns 0 if no heap with that index exists.
+* @param heapIndex which heap to query (0 = main heap)
+*/
+//%
+uint32_t _deviceHeapSize(int heapIndex)
+{
+    return device_heap_size((uint8_t)heapIndex);
+}
+
+/**
+* Physical RAM fitted to the chip, in bytes, detected at runtime.
+* On v1/v2 (nRF51) this reads the FICR (microbit_ram_size): 16384 on a 16KB
+* v1, 32768 on a 32KB v2. Unlike _ramSize(), which returns the fixed 16KB
+* linker map top, this reflects the actual silicon.
+*/
+//%
+uint32_t _physicalRamSize()
+{
+#if MICROBIT_CODAL
+    return 128 * 1024; // nRF52833 (v3) always has 128KB SRAM
+#else
+    return microbit_ram_size();
+#endif
 }
 
 }
