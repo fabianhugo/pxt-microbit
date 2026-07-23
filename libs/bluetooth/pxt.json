@@ -37,7 +37,8 @@
                 "config": {
                     "microbit-dal": {
                         "bluetooth": {
-                            "event_service": 0
+                            "event_service": 0,
+                            "force_enabled_dal_16kb": 1
                         }
                     }
                 }
