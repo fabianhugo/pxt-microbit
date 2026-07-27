@@ -36,9 +36,12 @@ pxt.editor.initExtensionsAsync = function (opts: pxt.editor.ExtensionOptions): P
         productId: 0x0204,
         classCode: 0xff,
         subclassCode: 0x00 // the custom CMSIS2 endpoint
+    }, {
+        vendorId: 0x1366, // SEGGER J-Link OB (Calliope mini v2)
+        productId: 0x1025
     }])
 
-    res.mkPacketIOWrapper = flash.mkDAPLinkPacketIOWrapper;
+    res.mkPacketIOWrapper = flash.mkPacketIOWrapper;
     res.blocklyPatch = patch.patchBlocks;
     res.showProgramTooLargeErrorAsync = dialogs.showProgramTooLargeErrorAsync;
     return Promise.resolve<pxt.editor.ExtensionResult>(res);

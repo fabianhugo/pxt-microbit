@@ -1,7 +1,11 @@
 /**
  * Control of the LED screen.
  */
+<<<<<<< HEAD
 //% color=#5C2D91 weight=101 icon="\uf205" block="LED"
+=======
+//% color=#8169E6 weight=97
+>>>>>>> hugo_wipboehm
 namespace led {
     /**
      * Get the on/off state of the specified LED using x, y coordinates. (0,0) is upper left.

@@ -48,8 +48,12 @@ int volume() {
 * @param enabled whether the built-in speaker is enabled in addition to the sound pin
 */
 //% blockId=music_set_built_in_speaker_enable block="set built-in speaker $enabled"
+<<<<<<< HEAD
 //% enabled.label="value"
 //% group="micro:bit (V2)"
+=======
+//% group="Calliope mini V3"
+>>>>>>> hugo_wipboehm
 //% parts=builtinspeaker
 //% help=music/set-built-in-speaker-enabled
 //% enabled.shadow=toggleOnOff
@@ -69,7 +73,7 @@ void setBuiltInSpeakerEnabled(bool enabled) {
 * Check whether any sound is being played, no matter the source
 */
 //% blockId=music_sound_is_playing block="sound is playing"
-//% group="micro:bit (V2)"
+//% group="Calliope mini V3"
 //% help=music/is-sound-playing
 //% weight=0
 bool isSoundPlaying() {
@@ -88,7 +92,7 @@ bool isSoundPlaying() {
 /**
  * Defines an optional sample level to generate during periods of silence.
  **/
-//% group="micro:bit (V2)"
+//% group="Calliope mini V3"
 //% help=music/set-silence-level
 //% level.min=0
 //% level.max=1024
