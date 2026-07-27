@@ -48,12 +48,7 @@ int volume() {
 * @param enabled whether the built-in speaker is enabled in addition to the sound pin
 */
 //% blockId=music_set_built_in_speaker_enable block="set built-in speaker $enabled"
-<<<<<<< HEAD
-//% enabled.label="value"
-//% group="micro:bit (V2)"
-=======
 //% group="Calliope mini V3"
->>>>>>> hugo_wipboehm
 //% parts=builtinspeaker
 //% help=music/set-built-in-speaker-enabled
 //% enabled.shadow=toggleOnOff

@@ -27,14 +27,8 @@ namespace basic {
      * @param interval how fast to shift characters; eg: 150, 100, 200, -100
      */
     //% help=basic/show-string
-<<<<<<< HEAD
-    //% weight=87 blockGap=16
-    //% block="show|string %text"
-    //% text.label="value"
-=======
     //% weight=100 blockGap=16
     //% block="show|string %text || in an interval of %interval ms"
->>>>>>> hugo_wipboehm
     //% async
     //% blockId=device_print_message
     //% parts="ledmatrix"

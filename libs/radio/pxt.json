@@ -1,18 +1,4 @@
 {
-<<<<<<< HEAD
-    "additionalFilePath": "../../node_modules/pxt-common-packages/libs/radio",
-    "yotta": {
-        "config": {
-            "microbit-dal": {
-                "bluetooth": {
-                    "enabled": 0
-                }
-            }
-        }
-    },
-    "searchOnly": true
-}
-=======
     "name": "radio",
     "description": "Legacy wrapper for Radio",
     "dependencies": {
@@ -22,4 +8,3 @@
     "public": true,
     "searchOnly": true
 }
->>>>>>> hugo_wipboehm

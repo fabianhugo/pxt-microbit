@@ -7,15 +7,9 @@ namespace basic {
      * @param interval speed of scroll; eg: 150, 100, 200, -100
      */
     //% help=basic/show-number
-<<<<<<< HEAD
-    //% weight=96
-    //% blockId=device_show_number block="show|number %number" blockGap=8
-    //% value.label="value"
-=======
     //% weight=95
     //% blockId=device_show_number
     //% block="show|number %number || in an interval of %interval ms" blockGap=8
->>>>>>> hugo_wipboehm
     //% async
     //% parts="ledmatrix"
     //% expandableArgumentMode="toggle"

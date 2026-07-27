@@ -200,11 +200,6 @@ namespace music {
      */
     //% help=music/play-tone weight=90
     //% blockId=device_play_note block="play|tone %note=device_note|for %duration=device_beat" blockGap=8
-<<<<<<< HEAD
-    //% frequency.label="note" ms.label="duration"
-    //% parts="headphone"
-=======
->>>>>>> hugo_wipboehm
     //% useEnumVal=1
     //% group="Tone"
     //% deprecated=1
@@ -220,11 +215,6 @@ namespace music {
      */
     //% help=music/ring-tone weight=80
     //% blockId=device_ring block="ring tone (Hz)|%note=device_note" blockGap=8
-<<<<<<< HEAD
-    //% frequency.label="note"
-    //% parts="headphone"
-=======
->>>>>>> hugo_wipboehm
     //% useEnumVal=1
     //% group="Tone"
     export function ringTone(frequency: number): void {
@@ -237,11 +227,6 @@ namespace music {
      */
     //% help=music/rest weight=79
     //% blockId=device_rest block="rest for |%duration=device_beat"
-<<<<<<< HEAD
-    //% ms.label="value"
-    //% parts="headphone"
-=======
->>>>>>> hugo_wipboehm
     //% group="Tone"
     export function rest(ms: number): void {
         playTone(0, ms);
@@ -391,11 +376,6 @@ namespace music {
      */
     //% help=music/begin-melody weight=60 blockGap=16
     //% blockId=device_start_melody block="start melody %melody=device_builtin_melody| repeating %options"
-<<<<<<< HEAD
-    //% melodyArray.label="melody"
-    //% parts="headphone"
-=======
->>>>>>> hugo_wipboehm
     //% group="Melody Advanced"
     //% deprecated=1
     export function startMelody(melodyArray: string[], options: MelodyOptions = 1) {
