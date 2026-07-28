@@ -411,7 +411,6 @@ namespace pxsim.visuals {
         }
         .sim-label, .sim-button-label {
             fill: #000;
-            pointer-events: none;
         }
         .sim-wireframe .sim-board {
             stroke-width: 2px;
@@ -419,9 +418,9 @@ namespace pxsim.visuals {
         *:focus {
             outline: none;
         }
-        *:focus-visible .sim-button-outer,
-        .sim-shake:focus-visible,
-        .sim-thermometer:focus-visible {
+        *:focus .sim-button-outer,
+        .sim-shake:focus,
+        .sim-thermometer:focus {
             outline: 5px solid white;
             stroke: black;
             stroke-width: 10px;
@@ -700,7 +699,6 @@ namespace pxsim.visuals {
 
     export class MicrobitBoardSvg implements BoardView {
         public element: SVGSVGElement;
-        private liveRegionInitialized = false;
         private style: SVGStyleElement;
         private defs: SVGDefsElement;
         private g: SVGGElement;
@@ -1003,7 +1001,7 @@ namespace pxsim.visuals {
             if (props && props.runtime) {
                 this.board = this.props.runtime.board as pxsim.DalBoard;
                 this.board.updateSubscribers.push(() => this.updateState());
-                this.updateState(true);
+                this.updateState();
                 this.attachEvents();
             }
         }
@@ -1998,6 +1996,7 @@ namespace pxsim.visuals {
             this.thermometerText.textContent = t + "°C";
             this.thermometer.setAttribute("aria-valuenow", t.toString());
             this.thermometer.setAttribute("aria-valuetext", t + "°C");
+            accessibility.setLiveContent(t + "°C");
         }
 
         private updateSoundLevel() {
@@ -2097,6 +2096,7 @@ namespace pxsim.visuals {
             this.soundLevelText.textContent = t + "";
             this.soundLevel.setAttribute("aria-valuenow", t.toString());
             this.soundLevel.setAttribute("aria-valuetext", t + "");
+            accessibility.setLiveContent(t + "");
         }
 
         private updateHeading() {
@@ -2671,79 +2671,23 @@ namespace pxsim.visuals {
                 let state = this.board;
                 if (!state.accelerometerState.accelerometer.isActive) return;
 
-                const boardElement = this.element as unknown as HTMLElement;
-                const parentSvg = this.findParentElement();
-
-                const xPos = ev.clientX != null ? ev.clientX : ev.pageX;
-                const yPos = ev.clientY != null ? ev.clientY : ev.pageY;
-
-                // The outermost SVG has a transform applied to it to create the tilt
-                // effect. In order to give us a constant bounding box to work with,
-                // we want to calculate the pre-transform bounds of the board element
-                // we can do this by comparing the aspect ratio of the page to the
-                // viewbox of the board SVG, since it should always be maximized within
-                // the page.
-                const pageBounds = document.body.getBoundingClientRect();
-
-                if (parentSvg && parentSvg !== this.element) {
-                    // If we are embedded in another SVG (e.g. the breadboard is present),
-                    // we need to do some extra work to find the bounding box of the board
-                    // element within the parent SVG.
-                    const parentViewBoxWidth = parentSvg.viewBox.baseVal.width;
-                    const parentViewBoxHeight = parentSvg.viewBox.baseVal.height;
-
-                    const aspectRatio = parentViewBoxWidth / parentViewBoxHeight;
-
-                    let parentWidth: number;
-                    let parentHeight: number;
-
-                    if (pageBounds.width / pageBounds.height > aspectRatio) {
-                        parentHeight = pageBounds.height;
-                        parentWidth = parentHeight * aspectRatio;
-                    }
-                    else {
-                        parentWidth = pageBounds.width;
-                        parentHeight = parentWidth / aspectRatio;
-                    }
-
-                    const parentLeft = pageBounds.left + (pageBounds.width - parentWidth) / 2;
-                    const parentTop = pageBounds.top + (pageBounds.height - parentHeight) / 2;
-
-
-                    const boardWidth = parseFloat(boardElement.getAttribute("width")!);
-                    const boardHeight = parseFloat(boardElement.getAttribute("height")!);
-                    const boardLeft = parseFloat(boardElement.getAttribute("x")!);
-                    const boardTop = parseFloat(boardElement.getAttribute("y")!);
-
-                    const boardPixelLeft = parentLeft + (boardLeft / parentViewBoxWidth) * parentWidth;
-                    const boardPixelTop = parentTop + (boardTop / parentViewBoxHeight) * parentHeight;
-
-                    const boardPixelWidth = (boardWidth / parentViewBoxWidth) * parentWidth;
-                    const boardPixelHeight = (boardHeight / parentViewBoxHeight) * parentHeight;
-                    handleMove(xPos - boardPixelLeft, yPos - boardPixelTop, boardPixelWidth, boardPixelHeight);
-                }
-                else {
-                    const boardViewboxWidth = this.element.viewBox.baseVal.width;
-                    const boardViewboxHeight = this.element.viewBox.baseVal.height;
-
-                    const aspectRatio = boardViewboxWidth / boardViewboxHeight;
-
-                    let boardWidth: number;
-                    let boardHeight: number;
-
-                    if (pageBounds.width / pageBounds.height > aspectRatio) {
-                        boardHeight = pageBounds.height;
-                        boardWidth = boardHeight * aspectRatio;
-                    }
-                    else {
-                        boardWidth = pageBounds.width;
-                        boardHeight = boardWidth / aspectRatio;
-                    }
-
-                    const boardLeft = pageBounds.left + (pageBounds.width - boardWidth) / 2;
-                    const boardTop = pageBounds.top + (pageBounds.height - boardHeight) / 2;
-
-                    handleMove(xPos - boardLeft, yPos - boardTop, boardWidth, boardHeight);
+                if (!tiltDecayer) {
+                    tiltDecayer = setInterval(() => {
+                        let accx = state.accelerometerState.accelerometer.getX(MicroBitCoordinateSystem.RAW);
+                        accx = Math.floor(Math.abs(accx) * 0.85) * (accx > 0 ? 1 : -1);
+                        let accy = state.accelerometerState.accelerometer.getY(MicroBitCoordinateSystem.RAW);
+                        accy = Math.floor(Math.abs(accy) * 0.85) * (accy > 0 ? 1 : -1);
+                        let accz = -Math.sqrt(Math.max(0, 1023 * 1023 - accx * accx - accy * accy));
+                        if (Math.abs(accx) <= 24 && Math.abs(accy) <= 24) {
+                            clearInterval(tiltDecayer);
+                            tiltDecayer = 0;
+                            accx = 0;
+                            accy = 0;
+                            accz = -1023;
+                        }
+                        state.accelerometerState.accelerometer.update(accx, accy, accz);
+                        this.updateTilt();
+                    }, 50)
                 }
             }, false);
         }
@@ -3016,80 +2960,12 @@ namespace pxsim.visuals {
                     this.updateButtonPairs();
                     this.board.bus.queue(bpState.abBtn.id, DAL.MICROBIT_BUTTON_EVT_UP);
                     this.board.bus.queue(bpState.abBtn.id, DAL.MICROBIT_BUTTON_EVT_CLICK);
-                }
+            }
             );
         }
 
         private attachKeyboardEvents() {
             accessibility.postKeyboardEvent();
         }
-
-        private bindEvent(element: Element | Document, eventName: string, handler: (e: Event) => void, ...rest: any[]) {
-            element.addEventListener(eventName, handler, ...rest);
-            this.bindings.push({ element, event: eventName, handler });
-        }
-    }
-
-    const isHandledKey = (key: string) => {
-        return ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End"].includes(key);
-    }
-
-    const getSliderStepValue = (min: number, max: number) => {
-        const range = max - min;
-        // Assumes slider values are always integers.
-        return Math.max(1, Math.floor(range / 10));
-    }
-
-    const commonKeyHandler = (e: KeyboardEvent, currentValue: number, min: number, max: number): number | undefined => {
-        const key = e.key;
-        if (isHandledKey(key)) {
-            e.preventDefault();
-        }
-        switch (key) {
-            case "ArrowDown":
-            case "ArrowLeft": {
-                return Math.max(min, currentValue - 1)
-            }
-            case "ArrowUp":
-            case "ArrowRight": {
-                return Math.min(max, currentValue + 1)
-            }
-            case "Home": {
-                return min;
-            }
-            case "End": {
-                return max;
-            }
-            case "PageDown": {
-                const step = getSliderStepValue(min, max);
-                const value = currentValue - step;
-                return Math.max(min, value)
-            }
-            case "PageUp": {
-                const step = getSliderStepValue(min, max);
-                const value = currentValue + step;
-                return Math.min(max, value)
-            }
-        }
-        return undefined;
-    }
-
-    const pinKeyHandler = (e: KeyboardEvent, currentValue: number, min: number, max: number, pinMode: PinFlags): number | undefined => {
-        const key = e.key;
-        if (isHandledKey(key)) {
-            if (!(pinMode & PinFlags.Input)) {
-                e.preventDefault();
-                accessibility.setLiveContent(pxsim.localization.lf("This pin is read-only"));
-                return undefined;
-            }
-            if (pinMode & PinFlags.Touch) {
-                // The pin is in touch mode and has button markup, not a slider.
-                e.preventDefault();
-                return undefined;
-            }
-        }
-        // The pin value for a digital pin may be higher than 1 depending on how its value was set.
-        const currentValueClamped = Math.min(max, currentValue);
-        return commonKeyHandler(e, currentValueClamped, min, max);
     }
 }
