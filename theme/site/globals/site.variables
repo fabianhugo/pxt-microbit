@@ -4,8 +4,13 @@
 
 @importGoogleFonts: false;
 
-@headerFont        : Roboto,"Arial Narrow","Helvetica Neue",Helvetica,Arial,sans-serif;
-@pageFont          : Roboto,"Helvetica Neue",Helvetica,Arial,sans-serif;
+/* Roboto Mono everywhere, matching original pxt-calliope. @pageFont also feeds
+   the generated text.blocklyText rule in built/web/blockly.css, so this is what
+   actually sets the block font (a lower-specificity .blocklyText override in
+   blockly.less loses against it and must not be relied on). */
+@fontName          : 'Roboto Mono', 'Noto Sans Mono', 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+@headerFont        : 'Roboto Mono', 'Noto Sans Mono', 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+@pageFont          : 'Roboto Mono', 'Noto Sans Mono', 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
 
 @primaryColor: @purple;
 

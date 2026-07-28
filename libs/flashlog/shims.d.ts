@@ -13,7 +13,7 @@ declare namespace flashlog {
     //% help=flashlog/begin-row
     //% parts="flashlog"
     //% blockGap=8
-    //% group="micro:bit (V2)" shim=flashlog::beginRow
+    //% group="Calliope mini V3" shim=flashlog::beginRow
     function beginRow(): int32;
 
     /**
@@ -22,7 +22,7 @@ declare namespace flashlog {
     //% help=flashlog/log-data
     //% parts="flashlog"
     //% blockGap=8
-    //% group="micro:bit (V2)" shim=flashlog::logData
+    //% group="Calliope mini V3" shim=flashlog::logData
     function logData(key: string, value: string): int32;
 
     /**
@@ -31,7 +31,7 @@ declare namespace flashlog {
     //% help=flashlog/log-string
     //% parts="flashlog"
     //% blockGap=8
-    //% group="micro:bit (V2)" shim=flashlog::logString
+    //% group="Calliope mini V3" shim=flashlog::logString
     function logString(value: string): int32;
 
     /**
@@ -40,7 +40,7 @@ declare namespace flashlog {
     //% help=flashlog/end-row
     //% parts="flashlog"
     //% blockGap=8
-    //% group="micro:bit (V2)" shim=flashlog::endRow
+    //% group="Calliope mini V3" shim=flashlog::endRow
     function endRow(): int32;
 
     /**
@@ -49,7 +49,7 @@ declare namespace flashlog {
     //% help=flashlog/clear
     //% parts="flashlog"
     //% blockGap=8
-    //% group="micro:bit (V2)" shim=flashlog::clear
+    //% group="Calliope mini V3" shim=flashlog::clear
     function clear(fullErase: boolean): void;
 
     /**
@@ -62,7 +62,7 @@ declare namespace flashlog {
     //% help=flashlog/set-time-stamp
     //% parts="flashlog"
     //% blockGap=8
-    //% group="micro:bit (V2)" shim=flashlog::setTimeStamp
+    //% group="Calliope mini V3" shim=flashlog::setTimeStamp
     function setTimeStamp(format: FlashLogTimeStampFormat): void;
 
     /**
@@ -73,7 +73,7 @@ declare namespace flashlog {
     //% help=flashlog/set-serial-mirroring
     //% parts="flashlog"
     //% blockGap=8
-    //% group="micro:bit (V2)" shim=flashlog::setSerialMirroring
+    //% group="Calliope mini V3" shim=flashlog::setSerialMirroring
     function setSerialMirroring(enable: boolean): void;
 
     /**

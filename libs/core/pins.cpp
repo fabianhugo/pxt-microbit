@@ -9,6 +9,45 @@
 #define PinCompat MicroBitPin
 #endif
 
+// Pin-ID fallbacks. The shared DigitalPin/AnalogPin enums and getPin() reference
+// MICROBIT_ID_IO_P16..P20, but not every variant defines all of them: the v3 codal
+// names these pins A1_RX/A1_TX/A0_SCL/A0_SDA (so MICROBIT_ID_IO_P16/P17/P19/P20 are
+// absent there), and the Lancaster micro:bit v1 DAL lacks P17/P18. Define the numeric
+// IDs (== ID_PIN_Px) so the shared code compiles on every variant.
+#ifndef MICROBIT_ID_IO_P16
+#define MICROBIT_ID_IO_P16 116
+#endif
+#ifndef MICROBIT_ID_IO_P17
+#define MICROBIT_ID_IO_P17 117
+#endif
+#ifndef MICROBIT_ID_IO_P18
+#define MICROBIT_ID_IO_P18 118
+#endif
+#ifndef MICROBIT_ID_IO_P19
+#define MICROBIT_ID_IO_P19 119
+#endif
+#ifndef MICROBIT_ID_IO_P20
+#define MICROBIT_ID_IO_P20 120
+#endif
+#ifndef MICROBIT_ID_IO_RGB
+#define MICROBIT_ID_IO_RGB 151
+#endif
+#ifndef MICROBIT_ID_IO_M_A_IN1
+#define MICROBIT_ID_IO_M_A_IN1 152
+#endif
+#ifndef MICROBIT_ID_IO_M_A_IN2
+#define MICROBIT_ID_IO_M_A_IN2 153
+#endif
+#ifndef MICROBIT_ID_IO_M_B_IN1
+#define MICROBIT_ID_IO_M_B_IN1 154
+#endif
+#ifndef MICROBIT_ID_IO_M_B_IN2
+#define MICROBIT_ID_IO_M_B_IN2 155
+#endif
+#ifndef MICROBIT_ID_IO_M_MODE
+#define MICROBIT_ID_IO_M_MODE 156
+#endif
+
 enum class DigitalPin {
     //% blockIdentity="pins._digitalPin"
     P0 = MICROBIT_ID_IO_P0,
@@ -19,37 +58,123 @@ enum class DigitalPin {
     //% blockIdentity="pins._digitalPin"
     P3 = MICROBIT_ID_IO_P3,
     //% blockIdentity="pins._digitalPin"
+    C4 = MICROBIT_ID_IO_P4,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P4 = MICROBIT_ID_IO_P4,
     //% blockIdentity="pins._digitalPin"
+    C5 = MICROBIT_ID_IO_P5,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P5 = MICROBIT_ID_IO_P5,
     //% blockIdentity="pins._digitalPin"
+    C6 = MICROBIT_ID_IO_P6,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P6 = MICROBIT_ID_IO_P6,
     //% blockIdentity="pins._digitalPin"
+    C7 = MICROBIT_ID_IO_P7,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P7 = MICROBIT_ID_IO_P7,
     //% blockIdentity="pins._digitalPin"
+    C8 = MICROBIT_ID_IO_P8,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P8 = MICROBIT_ID_IO_P8,
     //% blockIdentity="pins._digitalPin"
+    C9 = MICROBIT_ID_IO_P9,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P9 = MICROBIT_ID_IO_P9,
     //% blockIdentity="pins._digitalPin"
+    C10 = MICROBIT_ID_IO_P10,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P10 = MICROBIT_ID_IO_P10,
     //% blockIdentity="pins._digitalPin"
+    C11 = MICROBIT_ID_IO_P11,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P11 = MICROBIT_ID_IO_P11,
     //% blockIdentity="pins._digitalPin"
+    C12 = MICROBIT_ID_IO_P12,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P12 = MICROBIT_ID_IO_P12,
     //% blockIdentity="pins._digitalPin"
+    C13 = MICROBIT_ID_IO_P13,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P13 = MICROBIT_ID_IO_P13,
     //% blockIdentity="pins._digitalPin"
+    C14 = MICROBIT_ID_IO_P14,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P14 = MICROBIT_ID_IO_P14,
     //% blockIdentity="pins._digitalPin"
+    C15 = MICROBIT_ID_IO_P15,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P15 = MICROBIT_ID_IO_P15,
     //% blockIdentity="pins._digitalPin"
+    //% block="C16 (A1 RX)"
+    C16 = MICROBIT_ID_IO_P16,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P16 = MICROBIT_ID_IO_P16,
     //% blockIdentity="pins._digitalPin"
-    //% blockHidden=1
+    //% block="A1 RX" blockHidden=true
+    A1_RX = MICROBIT_ID_IO_P16,
+    //% blockIdentity="pins._digitalPin"
+    //% block="C17 (A1 TX)"
+    C17 = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
+    P17 = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._digitalPin"
+    //% block="A1 TX" blockHidden=true
+    A1_TX = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._digitalPin"
+    C18 = MICROBIT_ID_IO_P18,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
+    P18 = MICROBIT_ID_IO_P18,
+    //% blockIdentity="pins._digitalPin"
+    //% block="C19 (A0 SCL)" blockHidden=true
+    C19 = MICROBIT_ID_IO_P19,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P19 = MICROBIT_ID_IO_P19,
     //% blockIdentity="pins._digitalPin"
-    //% blockHidden=1
+    //% block="A0 SCL" blockHidden=true
+    A0_SCL = MICROBIT_ID_IO_P19,
+    //% blockIdentity="pins._digitalPin"
+    //% block="C20 (A0 SDA)" blockHidden=true
+    C20 = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
     P20 = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._digitalPin"
+    //% block="A0 SDA" blockHidden=true
+    A0_SDA = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
+    M_MODE = MICROBIT_ID_IO_M_MODE,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
+    M0_DIR = MICROBIT_ID_IO_M_A_IN1,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
+    M1_DIR = MICROBIT_ID_IO_M_B_IN1,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
+    M0_SPEED = MICROBIT_ID_IO_M_A_IN2,
+    //% blockIdentity="pins._digitalPin"
+    //% blockHidden=true
+    M1_SPEED = MICROBIT_ID_IO_M_B_IN2,
+    //% blockIdentity="pins._digitalPin"
+    RGB = MICROBIT_ID_IO_RGB,
 };
 
 enum class AnalogPin {
@@ -62,37 +187,121 @@ enum class AnalogPin {
     //% blockIdentity="pins._analogPin"
     P3 = MICROBIT_ID_IO_P3,
     //% blockIdentity="pins._analogPin"
+    C4 = MICROBIT_ID_IO_P4,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P4 = MICROBIT_ID_IO_P4,
     //% blockIdentity="pins._analogPin"
+    C5 = MICROBIT_ID_IO_P5,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P5 = MICROBIT_ID_IO_P5,
     //% blockIdentity="pins._analogPin"
+    C6 = MICROBIT_ID_IO_P6,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P6 = MICROBIT_ID_IO_P6,
     //% blockIdentity="pins._analogPin"
+    C7 = MICROBIT_ID_IO_P7,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P7 = MICROBIT_ID_IO_P7,
     //% blockIdentity="pins._analogPin"
+    C8 = MICROBIT_ID_IO_P8,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P8 = MICROBIT_ID_IO_P8,
     //% blockIdentity="pins._analogPin"
+    C9 = MICROBIT_ID_IO_P9,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P9 = MICROBIT_ID_IO_P9,
     //% blockIdentity="pins._analogPin"
+    C10 = MICROBIT_ID_IO_P10,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P10 = MICROBIT_ID_IO_P10,
     //% blockIdentity="pins._analogPin"
+    C11 = MICROBIT_ID_IO_P11,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P11 = MICROBIT_ID_IO_P11,
     //% blockIdentity="pins._analogPin"
+    C12 = MICROBIT_ID_IO_P12,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P12 = MICROBIT_ID_IO_P12,
     //% blockIdentity="pins._analogPin"
+    C13 = MICROBIT_ID_IO_P13,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P13 = MICROBIT_ID_IO_P13,
     //% blockIdentity="pins._analogPin"
+    C14 = MICROBIT_ID_IO_P14,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P14 = MICROBIT_ID_IO_P14,
     //% blockIdentity="pins._analogPin"
+    C15 = MICROBIT_ID_IO_P15,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P15 = MICROBIT_ID_IO_P15,
     //% blockIdentity="pins._analogPin"
+    //% block="C16 (A1 RX)"
+    C16 = MICROBIT_ID_IO_P16,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P16 = MICROBIT_ID_IO_P16,
     //% blockIdentity="pins._analogPin"
-    //% blockHidden=1
+    //% block="A1 RX" blockHidden=true
+    A1_RX = MICROBIT_ID_IO_P16,
+    //% blockIdentity="pins._analogPin"
+    //% block="C17 (A1 TX)"
+    C17 = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
+    P17 = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._analogPin"
+    //% block="A1 TX" blockHidden=true
+    A1_TX = MICROBIT_ID_IO_P17,
+    //% blockIdentity="pins._analogPin"
+    C18 = MICROBIT_ID_IO_P18,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
+    P18 = MICROBIT_ID_IO_P18,
+    //% blockIdentity="pins._analogPin"
+    //% block="C19 (A0 SCL)" blockHidden=true
+    C19 = MICROBIT_ID_IO_P19,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
     P19 = MICROBIT_ID_IO_P19,
     //% blockIdentity="pins._analogPin"
-    //% blockHidden=1
-    P20 = MICROBIT_ID_IO_P20
+    //% block="A0 SCL" blockHidden=true
+    A0_SCL = MICROBIT_ID_IO_P19,
+    //% blockIdentity="pins._analogPin"
+    //% block="C20 (A0 SDA)" blockHidden=true
+    C20 = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
+    P20 = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._analogPin"
+    //% block="A0 SDA" blockHidden=true
+    A0_SDA = MICROBIT_ID_IO_P20,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
+    M_MODE = MICROBIT_ID_IO_M_MODE,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
+    M0_DIR = MICROBIT_ID_IO_M_A_IN1,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
+    M1_DIR = MICROBIT_ID_IO_M_B_IN1,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
+    M0_SPEED = MICROBIT_ID_IO_M_A_IN2,
+    //% blockIdentity="pins._analogPin"
+    //% blockHidden=true
+    M1_SPEED = MICROBIT_ID_IO_M_B_IN2
 };
 
 enum class PulseValue {
@@ -143,18 +352,84 @@ MicroBitPin *getPin(int id) {
         case MICROBIT_ID_IO_P13: return &uBit.io.P13;
         case MICROBIT_ID_IO_P14: return &uBit.io.P14;
         case MICROBIT_ID_IO_P15: return &uBit.io.P15;
-        case MICROBIT_ID_IO_P16: return &uBit.io.P16;
-        case MICROBIT_ID_IO_P19: return &uBit.io.P19;
-        case MICROBIT_ID_IO_P20: return &uBit.io.P20;
+        // P16/P17/P19/P20 IO-member names differ by codal version: the Calliope pin-update
+        // codal renames them to A1RX/A1TX/A0SCL/A0SDA AND defines MICROBIT_ID_IO_A1_RX,
+        // while older codal and the v1/v2 DAL keep P16/P17/P19/P20. Key off the
+        // MICROBIT_ID_IO_A1_RX define (NOT MICROBIT_CODAL — both codal versions set that).
+        // Same pin IDs (116/117/119/120) on all variants.
+        case MICROBIT_ID_IO_P16:
+#ifdef MICROBIT_ID_IO_A1_RX
+            return &uBit.io.A1RX;
+#else
+            return &uBit.io.P16;
+#endif
+        case MICROBIT_ID_IO_P17:
+#ifdef MICROBIT_ID_IO_A1_RX
+            return &uBit.io.A1TX;
+#else
+            return &uBit.io.P17;
+#endif
 #if MICROBIT_CODAL
+        case MICROBIT_ID_IO_P18: return &uBit.io.P18; // both codal versions have P18; v1/v2 DAL has none
+#endif
+        case MICROBIT_ID_IO_P19:
+#ifdef MICROBIT_ID_IO_A1_RX
+            return &uBit.io.A0SCL;
+#else
+            return &uBit.io.P19;
+#endif
+        case MICROBIT_ID_IO_P20:
+#ifdef MICROBIT_ID_IO_A1_RX
+            return &uBit.io.A0SDA;
+#else
+            return &uBit.io.P20;
+#endif
+#ifdef MICROBIT_PIN_RGB
+        case MICROBIT_ID_IO_RGB: return &uBit.io.RGB; // All Calliope variants (v1/v2 DAL, v3 codal)
+#endif
+#if MICROBIT_CODAL
+        case MICROBIT_ID_IO_M_A_IN1: return &uBit.io.M_A_IN1;
+        case MICROBIT_ID_IO_M_A_IN2: return &uBit.io.M_A_IN2;
+        case MICROBIT_ID_IO_M_B_IN1: return &uBit.io.M_B_IN1;
+        case MICROBIT_ID_IO_M_B_IN2: return &uBit.io.M_B_IN2;
+        case MICROBIT_ID_IO_M_MODE: return &uBit.io.M_MODE;
         case 1001: return &uBit.io.usbTx;
         case 1002: return &uBit.io.usbRx;
+#else
+        // Calliope v1/v2 DAL: single DRV8837 motor
+        // IDs aligned to codal: MOTOR_IN1=152=M_A_IN1, MOTOR_IN2=154=M_B_IN1, MOTOR_SLEEP=156=M_MODE
+        case MICROBIT_ID_IO_M_A_IN1: return &uBit.io.MOTOR_IN1;
+        case MICROBIT_ID_IO_M_B_IN1: return &uBit.io.MOTOR_IN2;
+        case MICROBIT_ID_IO_M_MODE:   return &uBit.io.MOTOR_SLEEP;
 #endif
         default: return NULL;
     }
 }
 
 } // pxt
+
+namespace hardware {
+    /**
+     * Returns the number of physically present RGB LEDs.
+     * 3 on Calliope mini v3 (codal), 1 on Calliope mini v1/v2 (DAL).
+     */
+    //%
+    int _rgbLedCount() {
+#if MICROBIT_CODAL
+        return 3;
+#else
+        return 1;
+#endif
+    }
+    //%
+    int _motorDriverType() {
+#if MICROBIT_CODAL
+        return 2;  // Calliope v3 codal: dual H-bridge
+#else
+        return 1;  // Calliope v1/v2 DAL: single DRV8837
+#endif
+    }
+} // hardware
 
 namespace pins {
     #define PINOP(op) \
@@ -433,7 +708,13 @@ namespace pins {
 #if MICROBIT_CODAL
             pitchPin = &uBit.audio.virtualOutputPin;
 #else
-            pitchPin = getPin((int)AnalogPin::P0);
+            // Calliope v1/v2 fallback (motors.ts startup normally sets this first):
+            // IN2 (MOTOR_IN2) = static HIGH reference, IN1 (MOTOR_IN1) = PWM audio.
+            // DRV8837: IN1=0,IN2=1 → Reverse; IN1=1,IN2=1 → Brake → OUT2 swings.
+            uBit.io.MOTOR_SLEEP.setDigitalValue(1); // nSLEEP HIGH → driver active
+            uBit.io.MOTOR_IN2.setDigitalValue(1);   // IN2 static HIGH
+            pitchPin = &uBit.io.MOTOR_IN1;          // IN1 = PWM audio
+            fiber_sleep(2);                         // tWAKE: DRV8837 needs ~1ms after nSLEEP
 #endif
         }
         // set pitch
@@ -452,6 +733,17 @@ namespace pins {
             // fiber_sleep(5);
         }
 #else
+        // Re-assert motor driver state before each tone.
+        // MOTOR_SLEEP and MOTOR_IN2 are on different nRF pins from pitchPin (MOTOR_IN1),
+        // so setDigitalValue here does NOT disrupt the analog/PWM state of pitchPin.
+        // Shared DRV8837: IN2 (M1_DIR) HIGH while IN1 is idle DC-drives the motor output,
+        // so only bias IN2 HIGH when actually sounding (frequency > 0). A rest/stop
+        // (frequency <= 0) leaves IN1=IN2=0 → coast (motor released). nSLEEP stays HIGH:
+        // coast with no PWM/no load draws <=200uA (datasheet), and avoids the ~1ms tWAKE
+        // that an nSLEEP wake would add to every note onset.
+        const bool toning = frequency > 0 && !edgeConnectorSoundDisabled;
+        uBit.io.MOTOR_SLEEP.setDigitalValue(1);          // keep nSLEEP active
+        uBit.io.MOTOR_IN2.setDigitalValue(toning ? 1 : 0); // IN2 HIGH only while sounding
         if (NULL != pitchPin && !edgeConnectorSoundDisabled)
             pinAnalogSetPitch(pitchPin, frequency, ms);
         // clear pitch
@@ -459,6 +751,7 @@ namespace pins {
             fiber_sleep(ms);
             if (NULL != pitchPin && !edgeConnectorSoundDisabled)
                 pitchPin->setAnalogValue(0);
+            uBit.io.MOTOR_IN2.setDigitalValue(0); // release motor after the tone (coast)
             analogTonePlaying = false;
             // causes issues with v2 DMA.
             // fiber_sleep(5);

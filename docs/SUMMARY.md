@@ -377,6 +377,7 @@
     * [Reactive](/device/reactive)
     * [Screen](/device/screen)
     * [Serial](/device/serial)
+        * [Calliope mini v2 serial monitor](/device/calliope-v2-serial)
     * [Servo](/device/servo)
     * [Simulator](/device/simulator)
     * [USB](/device/usb)

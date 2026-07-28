@@ -1,3 +1,5 @@
+//% color=#54C9C9 weight=100 icon="\uf00a"
+//% groups=['LED matrix', 'Control', 'RGB LED', 'others']
 namespace basic {
 
     /**
@@ -5,11 +7,14 @@ namespace basic {
      * @param interval speed of scroll; eg: 150, 100, 200, -100
      */
     //% help=basic/show-number
-    //% weight=96
-    //% blockId=device_show_number block="show|number %number" blockGap=8
-    //% value.label="value"
+    //% weight=95
+    //% blockId=device_show_number
+    //% block="show|number %number || in an interval of %interval ms" blockGap=8
     //% async
-    //% parts="ledmatrix" interval.defl=150
+    //% parts="ledmatrix"
+    //% expandableArgumentMode="toggle"
+    //% interval.defl=150
+    //% group="LED matrix"
     export function showNumber(value: number, interval?: number) {
         if (isNaN(value))
             showString("?")

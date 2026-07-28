@@ -3,7 +3,7 @@
  */
 //% fixedInstances
 //% blockNamespace=music
-//% group="micro:bit (V2)"
+//% group="Calliope mini V3"
 class SoundExpression extends music.Playable {
     constructor(private notes: string) {
         super()
@@ -27,7 +27,7 @@ class SoundExpression extends music.Playable {
     //% weight=80
     //% blockGap=8
     //% help=music/play
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% parts=builtinspeaker
     //% deprecated=1
     play() {
@@ -42,7 +42,7 @@ class SoundExpression extends music.Playable {
     //% weight=81
     //% blockGap=8
     //% help=music/play-until-done
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% parts=builtinspeaker
     //% deprecated=1
     playUntilDone() {
@@ -334,7 +334,7 @@ namespace music {
     //% weight=100 help=music/play-sound-effect
     //% blockGap=8
     //% deprecated=1
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     export function playSoundEffect(sound: string, mode: SoundExpressionPlayMode) {
         if (mode === SoundExpressionPlayMode.InBackground) {
             new SoundExpression(sound).play();
@@ -382,7 +382,7 @@ namespace music {
     //% inlineInputMode="variable"
     //% inlineInputModeLimit=3
     //% expandableArgumentBreaks="3,5"
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% deprecated=1
     export function createSoundEffect(waveShape: WaveShape, startFrequency: number, endFrequency: number, startVolume: number, endVolume: number, duration: number, effect: SoundExpressionEffect, interpolation: InterpolationCurve): string {
         let src = "000000000000000000000000000000000000000000000000000000000000000000000000";
@@ -469,7 +469,7 @@ namespace music {
     //% duplicateWithToolboxParent=music_playable_play
     //% duplicateWithToolboxParentArgument=toPlay
     //% duplicateShadowOnDrag
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     export function createSoundExpression(waveShape: WaveShape, startFrequency: number, endFrequency: number, startVolume: number, endVolume: number, duration: number, effect: SoundExpressionEffect, interpolation: InterpolationCurve): SoundExpression {
         return new SoundExpression(createSoundEffect(waveShape, startFrequency, endFrequency, startVolume, endVolume, duration, effect, interpolation));
     }
@@ -492,7 +492,7 @@ namespace music {
     //% blockId=soundExpression_builtinSoundEffect
     //% block="$soundExpression"
     //% blockGap=8
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% toolboxParent=soundExpression_playSoundEffect
     //% toolboxParentArgument=sound
     //% weight=98 help=music/builtin-sound-effect
@@ -508,7 +508,7 @@ namespace music {
     //% blockId=soundExpression_builtinPlayableSoundEffect
     //% block="$soundExpression"
     //% blockGap=8
-    //% group="micro:bit (V2)"
+    //% group="Calliope mini V3"
     //% toolboxParent=music_playable_play
     //% toolboxParentArgument=toPlay
     //% duplicateShadowOnDrag
