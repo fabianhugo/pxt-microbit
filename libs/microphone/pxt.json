@@ -1,5 +1,17 @@
 {
+    "name": "microphone",
+    "description": "Additional microphone blocks.",
+    "icon": "./static/packages/microphone/icon.png",
     "additionalFilePath": "../../node_modules/pxt-common-packages/libs/microphone",
+    "files": [
+        "README.md",
+        "microphone.cpp",
+        "microphonehw.cpp",
+        "enums.d.ts",
+        "shims.d.ts",
+        "targetoverrides.ts",
+        "_locales/de/microphone-strings.json"
+    ],
     "dependencies": {
         "core": "file:../core"
     }

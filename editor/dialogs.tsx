@@ -20,7 +20,7 @@ export async function showProgramTooLargeErrorAsync(variants: string[], confirmA
         if (variants[0] !== "mbcodal") return undefined;
         await confirmAsync({
             header: lf("Oops, there was a problem downloading your code"),
-            body: lf("Great coding skills! Unfortunately, your program is too large to fit on a micro:bit V2😢. You can go back and try to make your program smaller, or continue to use the simulator to run your code."),
+            body: lf("Great coding skills! Unfortunately, your program is too large to fit on a Calliope mini V3😢. You can go back and try to make your program smaller, or continue to use the simulator to run your code."),
             bigHelpButton: true,
             hideAgree: true,
             disagreeLbl: lf("Go Back"),
@@ -39,7 +39,7 @@ export async function showProgramTooLargeErrorAsync(variants: string[], confirmA
 
     const choice = await confirmAsync({
         header: lf("Oops, there was a problem downloading your code"),
-        body: lf("Great coding skills! Unfortunately, your program is too large to fit on a micro:bit V1😢. You can go back and try to make your program smaller, or you can download your program onto a micro:bit V2."),
+        body: lf("Great coding skills! Unfortunately, your program is too large to fit on a Calliope mini V1 or V2😢. You can go back and try to make your program smaller, or you can download your program onto a Calliope mini V3."),
         bigHelpButton: true,
         agreeLbl: lf("Go Back"),
         agreeClass: "cancel",

@@ -1,6 +1,6 @@
 {
     "name": "bluetooth",
-    "description": "Bluetooth services",
+    "description": "Adds blocks for Bluetooth",
     "files": [
         "README.md",
         "enums.d.ts",
@@ -21,7 +21,8 @@
         "config": {
             "microbit-dal": {
                 "bluetooth": {
-                    "enabled": 1
+                    "enabled": 1,
+                    "force_enabled_dal_16kb": 1
                 }
             }
         },

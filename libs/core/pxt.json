@@ -63,16 +63,20 @@
         "sendbufferbrightness.s",
         "light.cpp",
         "logo.cpp",
+        "rgbled.ts",
+        "hardware.ts",
+        "motors.ts",
         "loops.ts",
         "touchmode.cpp",
         "soundexpressions.ts",
         "soundexpressions.cpp",
         "parts/speaker.svg",
         "parts/headphone.svg",
-        "playable.ts"
+        "playable.ts",
+        "_locales/de/core-jsdoc-strings.json",
+        "_locales/de/core-strings.json"
     ],
     "testFiles": [],
-    "public": true,
     "dependencies": {},
     "dalDTS": {
         "corePackage": ".",
@@ -109,38 +113,37 @@
         },
         "optionalConfig": {
             "microbit-dal": {
+                "simulate_mini1_on_mini2": 0,
                 "bluetooth": {
                     "private_addressing": 0,
                     "advertising_timeout": 0,
                     "tx_power": 6,
                     "dfu_service": 1,
-                    "event_service": 1,
+                    "event_service": 0,
                     "device_info_service": 1,
-                    "eddystone_url": 1,
-                    "eddystone_uid": 1,
-                    "open": 0,
+                    "whitelist": 0,
                     "pairing_mode": 1,
-                    "whitelist": 1,
-                    "security_level": "SECURITY_MODE_ENCRYPTION_NO_MITM",
-                    "partial_flashing": 1
+                    "partial_flashing": 1,
+                    "security_level": "SECURITY_MODE_ENCRYPTION_OPEN_LINK",
+                    "enabled": 1
                 }
             }
+            
         },
         "userConfigs": [
             {
-                "description": "No Pairing Required: Anyone can connect via Bluetooth.",
+                "description": "No Pairing Required(default): Anyone can connect via Bluetooth.",
                 "config": {
                     "microbit-dal": {
                         "bluetooth": {
-                            "open": 1,
                             "whitelist": 0,
-                            "security_level": null
+                            "security_level": "SECURITY_MODE_ENCRYPTION_OPEN_LINK"
                         }
                     }
                 }
             },
             {
-                "description": "JustWorks pairing (default): Pairing is automatic once the pairing is initiated.",
+                "description": "JustWorks pairing: Pairing is automatic once the pairing is initiated.",
                 "config": {
                     "microbit-dal": {
                         "bluetooth": {

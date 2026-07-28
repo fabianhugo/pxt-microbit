@@ -172,7 +172,7 @@ enum MusicEvent {
 /**
  * Generation of music tones.
  */
-//% color=#E63022 weight=106 icon="\uf025"
+//% color=#DF4600 weight=98 icon="\uf025"
 //% groups='["Melody", "Tone", "Volume", "Tempo", "Melody Advanced"]'
 namespace music {
     const INTERNAL_MELODY_ENDED = 5;
@@ -196,7 +196,6 @@ namespace music {
      */
     //% help=music/play-tone weight=90
     //% blockId=device_play_note block="play|tone %note=device_note|for %duration=device_beat" blockGap=8
-    //% parts="headphone"
     //% useEnumVal=1
     //% group="Tone"
     //% deprecated=1
@@ -212,7 +211,6 @@ namespace music {
      */
     //% help=music/ring-tone weight=80
     //% blockId=device_ring block="ring tone (Hz)|%note=device_note" blockGap=8
-    //% parts="headphone"
     //% useEnumVal=1
     //% group="Tone"
     export function ringTone(frequency: number): void {
@@ -225,7 +223,6 @@ namespace music {
      */
     //% help=music/rest weight=79
     //% blockId=device_rest block="rest for |%duration=device_beat"
-    //% parts="headphone"
     //% group="Tone"
     export function rest(ms: number): void {
         playTone(0, ms);
@@ -360,7 +357,6 @@ namespace music {
      * Use startMelody instead
      */
     //% hidden=1 deprecated=1
-    //% parts="headphone"
     //% group="Melody Advanced"
     export function beginMelody(melodyArray: string[], options: MelodyOptions = 1) {
         return startMelodyInternal(melodyArray, options);
@@ -374,7 +370,6 @@ namespace music {
      */
     //% help=music/begin-melody weight=60 blockGap=16
     //% blockId=device_start_melody block="start melody %melody=device_builtin_melody| repeating %options"
-    //% parts="headphone"
     //% group="Melody Advanced"
     //% deprecated=1
     export function startMelody(melodyArray: string[], options: MelodyOptions = 1) {
@@ -391,7 +386,6 @@ namespace music {
     //% melody.shadow="melody_editor"
     //% tempo.min=40 tempo.max=500
     //% tempo.defl=120
-    //% parts=headphone
     //% group="Melody"
     //% deprecated=1
     export function playMelody(melody: string, tempo: number) {
@@ -495,7 +489,6 @@ namespace music {
      */
     //% help=music/stop-melody weight=59 blockGap=16
     //% blockId=device_stop_melody block="stop melody $options"
-    //% parts="headphone"
     //% group="Melody Advanced"
     export function stopMelody(options: MelodyStopOptions) {
         if (options & MelodyStopOptions.Background)

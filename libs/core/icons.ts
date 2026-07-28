@@ -180,13 +180,16 @@ namespace basic {
      */
     //% weight=90 blockGap=8
     //% blockId=basic_show_icon
-    //% block="show icon %i" icon="\uf00a"
+    //% block="show icon %i || for %interval ms" icon="\uf00a"
     //% parts="ledmatrix"
     //% help=basic/show-icon
     //% icon.fieldEditor="imagedropdown"
     //% icon.fieldOptions.columns="5"
     //% icon.fieldOptions.width="380"
     //% icon.fieldOptions.maxRows=4
+    //% expandableArgumentMode="toggle"
+    //% interval.defl=600
+    //% group="LED matrix"
     export function showIcon(icon: IconNames, interval = 600) {
         let res = images.iconImage(icon)
         res.showImage(0, interval)
@@ -201,7 +204,9 @@ namespace basic {
     //% blockId=basic_show_arrow
     //% block="show arrow %i=device_arrow"
     //% parts="ledmatrix"
+    //% advanced=true
     //% help=basic/show-arrow
+    //% deprecated=true
     export function showArrow(direction: number, interval = 600) {
         let res = images.arrowImage(direction)
         res.showImage(0, interval)

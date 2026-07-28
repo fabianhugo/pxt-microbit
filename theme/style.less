@@ -10,9 +10,19 @@
 /* Reference import */
 @import (reference) "semantic.less";
 
+/* Import font definitions */
+@import 'fonts';
+
 /*******************************
     Add your custom CSS here
 *******************************/
+
+/* Toolbox category labels — same size/weight as original pxt-calliope */
+.pxtToolbox span.blocklyTreeLabel {
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0;
+}
 
 /* Roboto font */
 @RobotoFont: data-uri("../docs/static/fonts/Roboto_400_normal.woff");
@@ -21,6 +31,7 @@
     font-family: 'Roboto';
     src: @RobotoFont format("woff");
 }
+
 
 :root, .pxt-theme-root {
     --pxt-page-font: @pageFont;

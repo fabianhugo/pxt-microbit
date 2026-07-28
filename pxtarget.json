@@ -1,13 +1,14 @@
 {
-    "id": "microbit",
-    "nickname": "microbit",
-    "name": "makecode.microbit.org",
-    "title": "Microsoft MakeCode for micro:bit",
-    "description": "A Blocks / JavaScript code editor for the micro:bit powered by Microsoft MakeCode.",
+    "id": "calliopemini",
+    "nickname": "mini",
+    "name": "makecode.calliope.cc",
+    "title": "Microsoft MakeCode for Calliope mini",
+    "description": "A Blocks / JavaScript code editor for the Calliope mini powered by Microsoft MakeCode.",
     "corepkg": "core",
     "bundleddirs": [
         "libs/core",
         "libs/audio-samples",
+        "libs/funk",
         "libs/radio",
         "libs/devices",
         "libs/bluetooth",
@@ -174,8 +175,8 @@
     "compileService": {
         "yottaTarget": "bbc-microbit-classic-gcc@https://github.com/lancaster-university/yotta-target-bbc-microbit-classic-gcc",
         "yottaCorePackage": "microbit",
-        "githubCorePackage": "lancaster-university/microbit",
-        "gittag": "v2.2.0-rc6",
+        "githubCorePackage": "calliope-mini/microbit",
+        "gittag": "v2.2.0-rc6-devhugo",
         "serviceId": "microbit",
         "dockerImage": "pext/yotta:gcc5"
     },
@@ -199,15 +200,15 @@
                 "buildEngine": "codal",
                 "codalTarget": {
                     "name": "codal-microbit-v2",
-                    "url": "https://github.com/lancaster-university/codal-microbit-v2",
-                    "branch": "v0.3.5",
+                    "url": "https://github.com/calliope-edu/codal-microbit-v2",
+                    "branch": "v0.3.5_calliope_universal",
                     "type": "git"
                 },
                 "codalBinary": "MICROBIT",
                 "githubCorePackage": "lancaster-university/microbit-v2-samples",
                 "gittag": "v0.2.13",
                 "serviceId": "mbcodal2",
-                "dockerImage": "pext/yotta:latest",
+                "dockerImage": "pext/yotta:update-yotta3",
                 "yottaConfigCompatibility": true
             }
         }
@@ -239,16 +240,17 @@
                 }
             ]
         },
-        "onStartColor": "#1E90FF",
+        "onStartColor": "#54C9C9",
         "onStartNamespace": "basic",
-        "onStartWeight": 54
+        "onStartWeight": 60,
+        "onStartGroup": "Control"
     },
     "simulator": {
         "autoRun": true,
         "streams": false,
-        "aspectRatio": 1.22,
+        "aspectRatio": 0.94,
         "parts": true,
-        "partsAspectRatio": 0.69,
+        "partsAspectRatio": 0.94,
         "messageSimulators": {
             "robot": {
                 "url": "https://microsoft.github.io/microbit-robot/?parentOrigin=$PARENT_ORIGIN$",
@@ -308,8 +310,31 @@
                 "P14": "P14",
                 "P15": "P15",
                 "P16": "P16",
+                "P17": "P17",
+                "P18": "P18",
                 "P19": "P19",
-                "P20": "P20"
+                "P20": "P20",
+                "C4": "P4",
+                "C5": "P5",
+                "C6": "P6",
+                "C7": "P7",
+                "C8": "P8",
+                "C9": "P9",
+                "C10": "P10",
+                "C11": "P11",
+                "C12": "P12",
+                "C13": "P13",
+                "C14": "P14",
+                "C15": "P15",
+                "C16": "P16",
+                "C17": "P17",
+                "C18": "P18",
+                "C19": "P19",
+                "C20": "P20",
+                "A1_RX": "P16",
+                "A1_TX": "P17",
+                "A0_SCL": "P19",
+                "A0_SDA": "P20"
             },
             "spiPins": {
                 "MOSI": "P15",
@@ -347,21 +372,16 @@
                 "microphone",
                 "logotouch",
                 "flashlog",
+                "motor",
 
                 "v2"
             ],
-            "pinStyles": {
-                "P0": "croc",
-                "P1": "croc",
-                "P2": "croc",
-                "GND": "croc",
-                "+3v3": "croc"
-            },
+            "pinStyles": {},
             "marginWhenBreadboarding": [
                 0,
-                0,
+                50,
                 80,
-                0
+                50
             ]
         }
     },
@@ -385,37 +405,35 @@
         "rawHID": true
     },
     "appTheme": {
-        "accentColor": "#5C005C",
-        "logoUrl": "https://microbit.org/",
-        "logo": "./static/logo.portrait.white.svg",
-        "docsLogo": "./static/logo.square.white.svg",
-        "portraitLogo": "./static/logo.square.white.svg",
-        "footerLogo": "./static/logo.portrait.black.svg",
+        "accentColor": "#249899",
+        "logoUrl": "https://calliope.cc/",
+        "logo": "./static/Calliopeminieditor.svg",
+        "docsLogo": "./static/Logo_Calliope_Woman.svg",
+        "portraitLogo": "./static/Logo_Calliope_Woman.svg",
+        "footerLogo": "./static/Calliopeminieditor.svg",
         "cardLogo": "./static/icons/apple-touch-icon.png",
         "appLogo": "./static/icons/apple-touch-icon.png",
         "organization": "Microsoft MakeCode",
         "organizationUrl": "https://makecode.com/",
-        "organizationLogo": "./static/Microsoft_logo_rgb_W-white_D-square.png",
-        "organizationWideLogo": "./static/Microsoft_logo_rgb_W-white_D.png",
+        "organizationLogo": "./static/Logo_Calliope_Woman.svg",
+        "organizationWideLogo": "./static/Microsoft-logo_rgb_c-gray-square.png",
         "homeScreenHero": {
-            "imageUrl": "/static/herogallery/hero-banner.png",
+            "imageUrl": "./static/calliope/hero/hero.jpg",
             "name": "Flashing Heart",
             "url": "/projects/flashing-heart",
-            "description": "New? Start here!",
+            "description": "Let's go – start your first tutorial with Calliope mini",
             "cardType": "tutorial"
         },
         "homeScreenHeroGallery": "/hero-banner",
-        "homeUrl": "https://makecode.microbit.org/",
-        "embedUrl": "https://makecode.microbit.org/",
-        "shareUrl": "https://makecode.microbit.org/",
-        "privacyUrl": "https://makecode.com/privacy",
-        "termsOfUseUrl": "https://makecode.com/termsofuse",
-        "githubUrl": "https://github.com/Microsoft/pxt-microbit",
-        "boardName": "micro:bit",
-        "boardNickname": "micro:bit",
-        "driveDisplayName": "MICROBIT",
-        "appStoreID": "1092687276",
-        "mobileSafariDownloadProtocol": "microbithex://?data",
+        "homeUrl": "https://makecode.calliope.cc/",
+        "embedUrl": "https://makecode.calliope.cc/",
+        "shareUrl": "https://makecode.calliope.cc/",
+        "privacyUrl": "https://go.microsoft.com/fwlink/?LinkId=521839",
+        "termsOfUseUrl": "https://go.microsoft.com/fwlink/?LinkID=206977",
+        "githubUrl": "https://github.com/calliope-edu/pxt-microbit",
+        "boardName": "Calliope mini",
+        "driveDisplayName": "MINI",
+        "appStoreID": "1309545545",
         "crowdinProject": "makecode",
         "extendEditor": true,
         "extendFieldEditors": true,
@@ -440,28 +458,28 @@
         ],
         "bluetoothUartFilters": [
             {
-                "namePrefix": "BBC micro:bit"
+                "namePrefix": "Calliope mini"
             }
         ],
         "docMenu": [
             {
                 "name": "Support",
-                "path": "https://support.microbit.org/"
-            },
-            {
-                "name": "Reference",
-                "path": "/reference"
+                "path": "https://calliope.cc/en/impressum"
             },
             {
                 "name": "Hardware",
-                "path": "/device"
+                "path": "https://calliope.cc/en/calliope-mini/tech-facts/"
             },
             {
                 "name": "Buy",
-                "path": "https://microbit.org/buy/"
+                "path": "https://shop.calliope.cc/"
+            },
+            {
+                "name": "Forum",
+                "path": "https://forum.calliope.cc/"
             }
         ],
-        "hasReferenceDocs": true,
+        "hasReferenceDocs": false,
         "usbDocs": "/device/usb",
         "hideHomeDetailsVideo": true,
         "invertedMenu": true,
@@ -483,16 +501,16 @@
             }
         },
         "blockColors": {
-            "logic": "#00A4A6",
-            "loops": "#00AA00",
-            "math": "#9400D3",
-            "variables": "#DC143C",
-            "text": "#B8860B",
-            "advanced": "#00272B",
-            "functions": "#3455DB",
+            "logic": "#006970",
+            "loops": "#107C10",
+            "math": "#712672",
+            "variables": "#A80000",
+            "text": "#996600",
+            "advanced": "#42495f",
+            "functions": "#005A9E",
             "arrays": "#E65722"
         },
-        "defaultColorTheme": "microbit-light",
+        "defaultColorTheme": "calliope-default",
         "highContrastColorTheme": "pxt-high-contrast",
         "blocksCollapsing": true,
         "highContrast": true,
@@ -577,24 +595,25 @@
         "immersiveReader": true,
         "tutorialCodeValidation": true,
         "downloadDialogTheme": {
-            "webUSBDeviceNames": ["BBC micro:bit CMSIS-DAP", "DAPLink CMSIS-DAP"],
+            "webUSBDeviceNames": ["Calliope mini CMSIS-DAP", "DAPLink CMSIS-DAP", "Calliope mini", "J-Link"],
             "minimumFirmwareVersion": "0249",
-            "deviceIcon": "xicon microbit",
-            "deviceSuccessIcon": "xicon microbit-check",
+            "deviceIcon": "usb",
+            "deviceSuccessIcon": "check",
 
             "downloadMenuHelpURL" : "/device/usb",
             "downloadHelpURL" : "/device/usb",
+            "firmwareHelpURL": "/device/usb/webusb/troubleshoot",
             "troubleshootWebUSBHelpURL": "/device/usb/webusb/troubleshoot",
             "incompatibleHardwareHelpURL": "/device/v2",
 
             "dragFileImage": "/static/download/transfer.png",
-            "connectDeviceImage": "/static/download/connect-microbit.gif",
+            "connectDeviceImage": "/static/download/connect.png",
             "disconnectDeviceImage": "/static/download/full-reset.gif",
-            "selectDeviceImage": "/static/download/selecting-microbit.gif",
-            "connectionSuccessImage": "/static/download/successfully-paired.png",
-            "incompatibleHardwareImage": "/static/download/incompatible.png",
-            "usbDeviceForgottenImage": "/static/download/device-forgotten.gif",
-            "browserUnpairImage": "/static/download/browser-unpair-image.gif"
+            "selectDeviceImage": "/static/download/pair.png",
+            "connectionSuccessImage": "/static/download/connected.png",
+            "checkFirmwareVersionImage": "/static/download/firmware.png",
+            "checkUSBCableImage": "/static/download/connect.png",
+            "incompatibleHardwareImage": "/static/download/incompatible.png"
         },
         "winAppDeprImage": "/static/winapp.PNG",
         "showWinAppDeprBanner": false,
@@ -610,7 +629,7 @@
         "hideReplaceMyCode": true,
         "matchWebUSBDeviceInSim": true,
         "condenseProfile": true,
-        "cloudProfileIcon": "/static/profile/microbit-cloud.png",
+        "cloudProfileIcon": "/static/icons/apple-touch-icon.png",
         "timeMachine": true,
         "timeMachineDiffInterval": 600000,
         "timeMachineSnapshotInterval": 1800000

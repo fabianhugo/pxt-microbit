@@ -20,6 +20,16 @@ basic.forever(() => {
 });
 ```
 
+### ~ hint
+
+#### Calliope mini v2
+
+The Calliope mini v2 / v2.1 uses a SEGGER J-Link interface chip, so the in-editor
+serial monitor connects to it differently and asks for a one-time serial port
+permission. See [Calliope mini v2 serial monitor](/device/calliope-v2-serial).
+
+### ~
+
 ## How to read the micro:bit's serial output from your computer
 
 Unfortunately, using the serial library requires quite a bit of a setup.
