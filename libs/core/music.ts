@@ -393,7 +393,6 @@ namespace music {
     //% melody.shadow="melody_editor"
     //% tempo.min=40 tempo.max=500
     //% tempo.defl=120
-    //% parts=headphone
     //% group="Melody"
     //% deprecated=1
     export function playMelody(melody: string, tempo: number) {
