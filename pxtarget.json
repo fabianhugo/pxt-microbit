@@ -176,7 +176,7 @@
         "yottaTarget": "bbc-microbit-classic-gcc@https://github.com/lancaster-university/yotta-target-bbc-microbit-classic-gcc",
         "yottaCorePackage": "microbit",
         "githubCorePackage": "calliope-mini/microbit",
-        "gittag": "v2.2.0-rc6-calliope-1",
+        "gittag": "v2.2.0-rc6-calliope-3",
         "serviceId": "microbit",
         "dockerImage": "pext/yotta:gcc5"
     },

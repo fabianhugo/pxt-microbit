@@ -22,7 +22,7 @@
             "microbit-dal": {
                 "bluetooth": {
                     "enabled": 1,
-                    "force_enabled_dal_16kb": 1
+                    "force_enabled_16kb": 1
                 }
             }
         },
