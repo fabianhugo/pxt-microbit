@@ -176,7 +176,7 @@
         "yottaTarget": "bbc-microbit-classic-gcc@https://github.com/lancaster-university/yotta-target-bbc-microbit-classic-gcc",
         "yottaCorePackage": "microbit",
         "githubCorePackage": "calliope-mini/microbit",
-        "gittag": "v2.2.0-rc6-devhugo",
+        "gittag": "v2.2.0-rc6-calliope-1",
         "serviceId": "microbit",
         "dockerImage": "pext/yotta:gcc5"
     },
@@ -201,7 +201,7 @@
                 "codalTarget": {
                     "name": "codal-microbit-v2",
                     "url": "https://github.com/calliope-edu/codal-microbit-v2",
-                    "branch": "v0.3.5_calliope_universal",
+                    "branch": "v0.3.5-calliope-4",
                     "type": "git"
                 },
                 "codalBinary": "MICROBIT",
